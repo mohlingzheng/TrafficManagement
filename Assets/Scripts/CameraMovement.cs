@@ -4,19 +4,25 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    public Transform target;
-    public Vector3 offset = new Vector3(-5f, 50f, 0);
+    public Camera gameCamera;
+    public float cameraMovementSpeed = 5;
 
-    // Start is called before the first frame update
-    void Start()
+    public float maxOrthographicSize = 5f, minOrthographicSize = 0.5f;
+    public float sensitivity = 0.1f;
+
+    private void Start()
     {
-        
+        gameCamera = GetComponent<Camera>();
+    }
+    public void MoveCamera(Vector3 inputVector)
+    {
+        var movementVector = Quaternion.Euler(0, 0, 0) * inputVector;
+        gameCamera.transform.position += movementVector * Time.deltaTime * cameraMovementSpeed;
     }
 
-    // Update is called once per frame
-    void LateUpdate()
+    private void Update()
     {
-        Vector3 desiredPosition = target.position + offset;
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 5f);
+        var scrollInput = Input.GetAxis("Mouse ScrollWheel") * sensitivity;
+        gameCamera.orthographicSize = Mathf.Clamp(gameCamera.orthographicSize - scrollInput, minOrthographicSize, maxOrthographicSize);
     }
 }

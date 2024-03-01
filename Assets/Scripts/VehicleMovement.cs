@@ -9,13 +9,19 @@ public class VehicleMovement : MonoBehaviour
 
     public List<Bezier.OrientedPoint> movePoints;
     private int currentPoint = 0;
-    public float speed = 10f;
+    public float speed = 50f;
     private RoadSystemNavigator navigator;
+    public GameObject goalObject;
+    public VehicleGeneration vehicleGeneration;
+    private float arriveThreshold = 20f;
 
     // Start is called before the first frame update
     void Start()
     {
         navigator = GetComponent<RoadSystemNavigator>();
+        navigator.currentRoadSystem = FindAnyObjectByType<RoadSystem>();
+        vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
+        SetGoal();
     }
 
     // Update is called once per frame
@@ -33,12 +39,27 @@ public class VehicleMovement : MonoBehaviour
                 currentPoint++;
             }
 
-/*            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * 5f);*/
+            if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
+            {
+                vehicleGeneration.ReduceVehicleCount(1);
+                Destroy(this.gameObject);
+            }
         }
     }
 
     public void SetMovePoints()
     {
         movePoints = navigator.CurrentPoints;
+    }
+
+    public void SetGoal()
+    {
+        GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
+        if (goalObjects.Length > 0)
+        {
+            int randomIndex = Random.Range(0, goalObjects.Length);
+            goalObject = goalObjects[randomIndex];
+        }
+        navigator.Goal = goalObject.transform.position;
     }
 }
