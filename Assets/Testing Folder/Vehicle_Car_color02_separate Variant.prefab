@@ -107,9 +107,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dccac749eaff0da43927b45a11678532, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
+  speed: 0
   goalObject: {fileID: 0}
   vehicleGeneration: {fileID: 0}
+  acceleration: 10
+  maximumVelocity: 30
+  currentSpeed: 0
+  rotationSpeed: 10
 --- !u!65 &2887095288479044207
 BoxCollider:
   m_ObjectHideFlags: 0

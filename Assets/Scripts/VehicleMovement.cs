@@ -2,6 +2,7 @@ using Barmetler;
 using Barmetler.RoadSystem;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class VehicleMovement : MonoBehaviour
@@ -9,15 +10,24 @@ public class VehicleMovement : MonoBehaviour
 
     public List<Bezier.OrientedPoint> movePoints;
     private int currentPoint = 0;
-    public float speed = 10f;
+    public float speed = 0f;
     private RoadSystemNavigator navigator;
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
     private float arriveThreshold = 20f;
+    public float acceleration = 30f;
+    public float maximumAcceleration = 30f;
+    public float maximumSpeed = 30f;
+    public float currentSpeed = 0f;
+    public float desiredSpeed = 30f;
+    public float rotationSpeed = 10f;
+    public Vector3 movingDirection;
+    private Rigidbody rb;
 
     // Start is called before the first frame update
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
         navigator = GetComponent<RoadSystemNavigator>();
         navigator.currentRoadSystem = FindAnyObjectByType<RoadSystem>();
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
@@ -28,8 +38,11 @@ public class VehicleMovement : MonoBehaviour
     void Update()
     {
         SetMovePoints();
-        UpdateMovement();
         CheckVehicleInfront();
+        CheckVehicleInfront();
+        SetVelocity();
+        //UpdateMovement();
+        
     }
 
     public void SetMovePoints()
@@ -59,11 +72,33 @@ public class VehicleMovement : MonoBehaviour
             //Quaternion targetRotation = Quaternion.LookRotation(direction);
             //transform.Translate(direction * speed * Time.deltaTime);
             transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
-            Vector3 direcion = target - transform.position;
+            Vector3 direcion = (target - transform.position).normalized;
             Quaternion rotation = Quaternion.LookRotation(direcion);
-            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, 1f * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
             //transform.LookAt(target);
             
+
+            if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
+            {
+                vehicleGeneration.ReduceVehicleCount(1);
+                Destroy(this.gameObject);
+            }
+        }
+    }
+
+    public void SetVelocity()
+    {
+        if (currentPoint < movePoints.Count)
+        {
+            Vector3 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
+            Vector3 target = movePoints[currentPoint].position + Vector3.Cross(Vector3.up, forwardDirection).normalized * -1.5f;
+            float speedDifference = desiredSpeed - currentSpeed;
+            acceleration = Mathf.Clamp(speedDifference / desiredSpeed, -1f, 1f) * maximumAcceleration;
+            currentSpeed += acceleration * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(transform.position, target, currentSpeed * Time.deltaTime);
+            movingDirection = (target - transform.position).normalized;
+            Quaternion rotation = Quaternion.LookRotation(movingDirection);
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
 
             if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
             {
@@ -83,7 +118,16 @@ public class VehicleMovement : MonoBehaviour
         {
             if (hit.collider.gameObject.tag == "Vehicle")
             {
-                Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.green);
+                float dotProduct = Vector3.Dot(this.movingDirection.normalized, hit.collider.gameObject.GetComponent<VehicleMovement>().movingDirection.normalized);
+                if (dotProduct > 0)
+                {
+                    desiredSpeed = Mathf.Lerp(maximumSpeed, 0f, hit.distance / maxDistance);
+                    Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.green);
+                }
+                else
+                {
+                    Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.blue);
+                }
             }
             else
             {
@@ -92,6 +136,7 @@ public class VehicleMovement : MonoBehaviour
         }
         else
         {
+            desiredSpeed = maximumSpeed;
             Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.red);
         }
     }
