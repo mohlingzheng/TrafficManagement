@@ -8,6 +8,7 @@ public class VehicleGeneration : MonoBehaviour
     public Vector3[] entryPoints;
     public GameObject vehicle;
     public int vehicleCount = 0;
+    public int carLimit = 100;
     // Start is called before the first frame update
     void Start()
     {
@@ -43,7 +44,7 @@ public class VehicleGeneration : MonoBehaviour
     {
         while (true)
         {
-            if (vehicleCount <= 100)
+            if (vehicleCount <= carLimit)
             {
                 for (int i = 0; i < 4; i++)
                 {

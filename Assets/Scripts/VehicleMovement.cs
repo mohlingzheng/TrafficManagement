@@ -9,7 +9,7 @@ public class VehicleMovement : MonoBehaviour
 
     public List<Bezier.OrientedPoint> movePoints;
     private int currentPoint = 0;
-    public float speed = 50f;
+    public float speed = 10f;
     private RoadSystemNavigator navigator;
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
@@ -28,23 +28,8 @@ public class VehicleMovement : MonoBehaviour
     void Update()
     {
         SetMovePoints();
-        if (currentPoint < movePoints.Count)
-        {
-            Vector3 direction = (movePoints[currentPoint].position - transform.position).normalized;
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.Translate(direction * speed * Time.deltaTime);
-
-            if (Vector3.Distance(transform.position, movePoints[currentPoint].position) < 0.1f)
-            {
-                currentPoint++;
-            }
-
-            if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
-            {
-                vehicleGeneration.ReduceVehicleCount(1);
-                Destroy(this.gameObject);
-            }
-        }
+        UpdateMovement();
+        CheckVehicleInfront();
     }
 
     public void SetMovePoints()
@@ -61,5 +46,53 @@ public class VehicleMovement : MonoBehaviour
             goalObject = goalObjects[randomIndex];
         }
         navigator.Goal = goalObject.transform.position;
+    }
+
+    public void UpdateMovement()
+    {
+        if (currentPoint < movePoints.Count)
+        {
+            Vector3 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
+            Vector3 target = movePoints[currentPoint].position + Vector3.Cross(Vector3.up, forwardDirection).normalized * -1.5f;
+
+            //Vector3 direction = (movePoints[currentPoint].position - transform.position).normalized;
+            //Quaternion targetRotation = Quaternion.LookRotation(direction);
+            //transform.Translate(direction * speed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+            Vector3 direcion = target - transform.position;
+            Quaternion rotation = Quaternion.LookRotation(direcion);
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, 1f * Time.deltaTime);
+            //transform.LookAt(target);
+            
+
+            if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
+            {
+                vehicleGeneration.ReduceVehicleCount(1);
+                Destroy(this.gameObject);
+            }
+        }
+    }
+
+    public void CheckVehicleInfront()
+    {
+        float maxDistance = 100f;
+        RaycastHit hit;
+        Vector3 raycastPosition = transform.position;
+        raycastPosition.y += 1f;
+        if (Physics.Raycast(raycastPosition, transform.forward, out hit, maxDistance))
+        {
+            if (hit.collider.gameObject.tag == "Vehicle")
+            {
+                Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.green);
+            }
+            else
+            {
+                Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.yellow);
+            }
+        }
+        else
+        {
+            Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.red);
+        }
     }
 }
