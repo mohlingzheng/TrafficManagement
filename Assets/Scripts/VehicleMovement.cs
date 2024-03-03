@@ -23,6 +23,7 @@ public class VehicleMovement : MonoBehaviour
     public float rotationSpeed = 10f;
     public Vector3 movingDirection;
     private Rigidbody rb;
+    public bool move = true;
 
     // Start is called before the first frame update
     void Start()
@@ -40,9 +41,12 @@ public class VehicleMovement : MonoBehaviour
         SetMovePoints();
         CheckVehicleInfront();
         CheckVehicleInfront();
-        SetVelocity();
+        if (move)
+        {
+            SetVelocity();
+        }
         //UpdateMovement();
-        
+
     }
 
     public void SetMovePoints()
@@ -139,5 +143,15 @@ public class VehicleMovement : MonoBehaviour
             desiredSpeed = maximumSpeed;
             Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.red);
         }
+    }
+
+    public void VehicleStop()
+    {
+        move = false;
+    }
+
+    public void VehicleMove()
+    {
+        move = true;
     }
 }
