@@ -94,15 +94,23 @@ public class VehicleMovement : MonoBehaviour
     {
         if (currentPoint < movePoints.Count)
         {
-            Vector3 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
+            Vector3 forwardDirection;
+            if (currentPoint == movePoints.Count - 1)
+                forwardDirection = (goalObject.gameObject.transform.position - movePoints[currentPoint].position).normalized;
+            else
+                forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
+
             Vector3 target = movePoints[currentPoint].position + Vector3.Cross(Vector3.up, forwardDirection).normalized * -1.5f;
             float speedDifference = desiredSpeed - currentSpeed;
             acceleration = Mathf.Clamp(speedDifference / desiredSpeed, -1f, 1f) * maximumAcceleration;
             currentSpeed += acceleration * Time.deltaTime;
             transform.position = Vector3.MoveTowards(transform.position, target, currentSpeed * Time.deltaTime);
             movingDirection = (target - transform.position).normalized;
-            Quaternion rotation = Quaternion.LookRotation(movingDirection);
-            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
+            if (movingDirection != Vector3.zero)
+            {
+                Quaternion rotation = Quaternion.LookRotation(movingDirection);
+                transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
+            }
 
             if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
             {

@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Goal
   - Vehicle
+  - Intersection3
+  - Intersection4
   layers:
   - Default
   - TransparentFX

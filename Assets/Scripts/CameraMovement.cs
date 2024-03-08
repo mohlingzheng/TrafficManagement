@@ -20,6 +20,12 @@ public class CameraMovement : MonoBehaviour
         gameCamera.transform.position += movementVector * Time.deltaTime * cameraMovementSpeed;
     }
 
+    public void RotateCamera(Vector3 inputVector)
+    {
+        var movementVector = Quaternion.Euler(0, 0, 0) * inputVector;
+        gameCamera.transform.Rotate(movementVector * Time.deltaTime * cameraMovementSpeed);
+    }
+
     private void Update()
     {
         var scrollInput = Input.GetAxis("Mouse ScrollWheel") * sensitivity;
