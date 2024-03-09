@@ -1,7 +1,10 @@
+using Barmetler.RoadSystem;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class VehicleGeneration : MonoBehaviour
 {
@@ -9,6 +12,7 @@ public class VehicleGeneration : MonoBehaviour
     public GameObject vehicle;
     public int vehicleCount = 0;
     public int carLimit = 100;
+    GameObject specificVehicle;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +24,7 @@ public class VehicleGeneration : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        GenerateSpecificVehicle();
     }
 
     public void SetEntryPoints()
@@ -60,5 +64,20 @@ public class VehicleGeneration : MonoBehaviour
     public void ReduceVehicleCount(int count)
     {
         vehicleCount = vehicleCount - count;
+    }
+
+    private void GenerateSpecificVehicle()
+    {
+        if (!specificVehicle)
+        {
+            specificVehicle = Instantiate(vehicle, entryPoints[3], Quaternion.identity);
+            specificVehicle.name = "Specific Vehicle";
+        }
+        else
+        {
+            Vector3 goal = new Vector3(542f, 0f, 425.3f);
+            if (specificVehicle.GetComponent<RoadSystemNavigator>().Goal != goal)
+                specificVehicle.GetComponent<RoadSystemNavigator>().Goal = goal;
+        }
     }
 }

@@ -32,7 +32,7 @@ public class VehicleMovement : MonoBehaviour
         navigator = GetComponent<RoadSystemNavigator>();
         navigator.currentRoadSystem = FindAnyObjectByType<RoadSystem>();
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
-        SetGoal();
+        SetRandomGoal();
     }
 
     // Update is called once per frame
@@ -54,7 +54,7 @@ public class VehicleMovement : MonoBehaviour
         movePoints = navigator.CurrentPoints;
     }
 
-    public void SetGoal()
+    public void SetRandomGoal()
     {
         GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
         if (goalObjects.Length > 0)

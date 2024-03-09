@@ -9,16 +9,17 @@ public class InputSystem : MonoBehaviour
 {
     public event Action<Ray> OnMouseClick, OnMouseHold;
     public event Action OnMouseUp, OnEscape;
-    private Vector2 leftMovementVector = Vector2.zero;
-    private Vector2 rightMovementVector = Vector2.zero;
-    public Vector2 CameraMovementVector { get => leftMovementVector; }
-    [SerializeField]
-    Camera mainCamera;
-    public CameraMovement cameraMovement;
+
+    public Camera mainCamera;
     public Button pauseButton;
     public Button resumeButton;
     public Image pointer;
-    bool Pressed = false;
+    public RoadBuildingManager roadBuildingManager;
+    bool YPressed = false, XPressed = false;
+
+    // Outline Related
+    private Transform highlight;
+    private Transform selection;
 
 
     void Start()
@@ -28,65 +29,11 @@ public class InputSystem : MonoBehaviour
 
     void Update()
     {
-        //CheckArrowInput();
-        //cameraMovement.MoveCamera(new Vector3(leftMovementVector.x, 0, leftMovementVector.y));
-        //cameraMovement.RotateCamera(rightMovementVector);
-        Pressed = Input.GetButtonDown("Y");
-        if (Pressed)
-        {
-            interactButton();
-        }
+        ButtonInteraction();
         ShootRaycast();
     }
 
-    private void CheckClickHoldEvent()
-    {
-        if (Input.GetMouseButton(0) && EventSystem.current.IsPointerOverGameObject() == false)
-        {
-
-            OnMouseClick?.Invoke(mainCamera.ScreenPointToRay(Input.mousePosition));
-        }
-    }
-
-    private void CheckClickUpEvent()
-    {
-        if (Input.GetMouseButtonUp(0) && EventSystem.current.IsPointerOverGameObject() == false)
-        {
-            OnMouseUp?.Invoke();
-        }
-    }
-
-    private void CheckClickDownEvent()
-    {
-        if (Input.GetMouseButtonDown(0) && EventSystem.current.IsPointerOverGameObject() == false)
-        {
-            OnMouseClick?.Invoke(mainCamera.ScreenPointToRay(Input.mousePosition));
-        }
-    }
-
-    private void CheckEscClick()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            OnEscape.Invoke();
-        }
-    }
-
-    private void CheckArrowInput()
-    {
-        leftMovementVector = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-        rightMovementVector = new Vector2(Input.GetAxis("RightHorizontal"), Input.GetAxis("RightVertical"));
-    }
-
-    public void ClearEvents()
-    {
-        OnMouseClick = null;
-        OnMouseHold = null;
-        OnEscape = null;
-        OnMouseUp = null;
-    }
-
-    public void interactButton()
+    public void YButtonInteractButton()
     {
         if (pauseButton.IsActive())
             ExecuteEvents.Execute(pauseButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
@@ -110,16 +57,87 @@ public class InputSystem : MonoBehaviour
         Debug.Log("resume");
     }
 
+    void ButtonInteraction()
+    {
+        YPressed = Input.GetButtonDown("Y");
+        if (YPressed)
+        {
+            YButtonInteractButton();
+        }
+        XPressed = Input.GetButtonDown("X");
+        if (XPressed)
+        {
+            Debug.Log("X Pressed");
+            roadBuildingManager.BuildRoad();
+        }
+
+
+    }
+
     public GameObject ShootRaycast()
     {
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
         Debug.DrawRay(ray.origin, ray.direction * 10f, Color.blue);
-        if(Physics.Raycast(ray, out hit, Mathf.Infinity)){
-            Debug.Log("hit " + hit.collider.gameObject.name);
+        if(Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject()){
+            //Debug.Log("hit " + hit.collider.gameObject.name);
+            OutlineGameObject(hit.transform, hit);
             return hit.collider.gameObject;
         }
         else
             return null;
+    }
+
+    public void OutlineGameObject(Transform transform, RaycastHit raycastHit)
+    {
+        if (highlight != null)
+        {
+            highlight.gameObject.GetComponent<Outline>().enabled = false;
+            highlight = null;
+        }
+
+        highlight = transform;
+
+        if (highlight != selection)
+        {
+            if (highlight.gameObject.GetComponent<Outline>() != null)
+            {
+                highlight.gameObject.GetComponent<Outline>().enabled = true;
+            }
+            else
+            {
+                Outline outline = highlight.gameObject.AddComponent<Outline>();
+                outline.enabled = true;
+                //highlight.gameObject.GetComponent<Outline>().OutlineColor = Color.magenta;
+                //highlight.gameObject.GetComponent<Outline>().OutlineWidth = 7.0f;
+            }
+            //Debug.Log(highlight.name);
+        }
+        else
+        {
+            highlight = null;
+        }
+
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    if (highlight)
+        //    {
+        //        if (selection != null)
+        //        {
+        //            selection.gameObject.GetComponent<Outline>().enabled = false;
+        //        }
+        //        selection = raycastHit.transform;
+        //        selection.gameObject.GetComponent<Outline>().enabled = true;
+        //        highlight = null;
+        //    }
+        //    else
+        //    {
+        //        if (selection)
+        //        {
+        //            selection.gameObject.GetComponent<Outline>().enabled = false;
+        //            selection = null;
+        //        }
+        //    }
+        //}
     }
 }
