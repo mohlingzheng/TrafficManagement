@@ -65,7 +65,7 @@ public class InputSystem : MonoBehaviour
             YButtonInteractButton();
         }
         XPressed = Input.GetButtonDown("X");
-        if (XPressed)
+        if (XPressed || Input.GetKeyDown(KeyCode.Y))
         {
             Debug.Log("X Pressed");
             roadBuildingManager.BuildRoad();
