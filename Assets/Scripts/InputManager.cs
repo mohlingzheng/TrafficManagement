@@ -1,3 +1,4 @@
+using Barmetler.RoadSystem;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InputSystem : MonoBehaviour
+public class InputManager : MonoBehaviour
 {
     public event Action<Ray> OnMouseClick, OnMouseHold;
     public event Action OnMouseUp, OnEscape;
@@ -15,11 +16,14 @@ public class InputSystem : MonoBehaviour
     public Button resumeButton;
     public Image pointer;
     public RoadBuildingManager roadBuildingManager;
-    bool YPressed = false, XPressed = false;
+    bool YPressed = false, XPressed = false, APressed = false, BPressed = false;
+    public RoadSystem roadSystem;
 
     // Outline Related
-    private Transform highlight;
-    private Transform selection;
+    public Transform highlight;
+    public Transform selection;
+
+    public GameObject pointedGameObject = null;
 
 
     void Start()
@@ -30,7 +34,7 @@ public class InputSystem : MonoBehaviour
     void Update()
     {
         ButtonInteraction();
-        ShootRaycast();
+        pointedGameObject = ShootRaycast();
     }
 
     public void YButtonInteractButton()
@@ -62,13 +66,25 @@ public class InputSystem : MonoBehaviour
         YPressed = Input.GetButtonDown("Y");
         if (YPressed)
         {
-            YButtonInteractButton();
+            Debug.Log("Y Pressed");
+            //YButtonInteractButton();
+            roadSystem.RebuildAllRoads();
         }
         XPressed = Input.GetButtonDown("X");
         if (XPressed || Input.GetKeyDown(KeyCode.Y))
         {
             Debug.Log("X Pressed");
             roadBuildingManager.BuildRoad();
+        }
+        APressed = Input.GetButtonDown("A");
+        if (APressed)
+        {
+            Debug.Log("A Pressed");
+        }
+        BPressed = Input.GetButtonDown("B");
+        if (BPressed)
+        {
+            Debug.Log("B Pressed");
         }
 
 
@@ -78,7 +94,7 @@ public class InputSystem : MonoBehaviour
     {
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
-        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.blue);
+        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
         if(Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject()){
             //Debug.Log("hit " + hit.collider.gameObject.name);
             OutlineGameObject(hit.transform, hit);
@@ -90,6 +106,7 @@ public class InputSystem : MonoBehaviour
 
     public void OutlineGameObject(Transform transform, RaycastHit raycastHit)
     {
+        // if previously highlight some gameobject, disable it and set to null
         if (highlight != null)
         {
             highlight.gameObject.GetComponent<Outline>().enabled = false;
@@ -107,6 +124,8 @@ public class InputSystem : MonoBehaviour
             else
             {
                 Outline outline = highlight.gameObject.AddComponent<Outline>();
+                outline.OutlineColor = new Color(91, 250, 98);
+                outline.OutlineWidth = 2;
                 outline.enabled = true;
                 //highlight.gameObject.GetComponent<Outline>().OutlineColor = Color.magenta;
                 //highlight.gameObject.GetComponent<Outline>().OutlineWidth = 7.0f;
@@ -118,26 +137,30 @@ public class InputSystem : MonoBehaviour
             highlight = null;
         }
 
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    if (highlight)
-        //    {
-        //        if (selection != null)
-        //        {
-        //            selection.gameObject.GetComponent<Outline>().enabled = false;
-        //        }
-        //        selection = raycastHit.transform;
-        //        selection.gameObject.GetComponent<Outline>().enabled = true;
-        //        highlight = null;
-        //    }
-        //    else
-        //    {
-        //        if (selection)
-        //        {
-        //            selection.gameObject.GetComponent<Outline>().enabled = false;
-        //            selection = null;
-        //        }
-        //    }
-        //}
+        if (APressed)
+        {
+            if (highlight)
+            {
+                if (selection != null)
+                {
+                    selection.gameObject.GetComponent<Outline>().enabled = false;
+                }
+                selection = highlight;
+                Outline outline = selection.gameObject.GetComponent<Outline>();
+                outline.enabled = true;
+                outline.OutlineColor = new Color(91, 250, 98);
+                outline.OutlineWidth = 2;
+                highlight = null;
+            }
+        }
+
+        if (BPressed)
+        {
+            if (selection != null)
+            {
+                selection.gameObject.GetComponent<Outline>().enabled = false;
+                selection = null;
+            }
+        }
     }
 }

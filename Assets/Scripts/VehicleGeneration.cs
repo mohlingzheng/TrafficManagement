@@ -24,7 +24,7 @@ public class VehicleGeneration : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GenerateSpecificVehicle();
+        //GenerateSpecificVehicle();
     }
 
     public void SetEntryPoints()
@@ -48,7 +48,7 @@ public class VehicleGeneration : MonoBehaviour
     {
         while (true)
         {
-            if (vehicleCount <= carLimit)
+            if (vehicleCount < carLimit)
             {
                 for (int i = 0; i < 4; i++)
                 {
