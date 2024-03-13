@@ -13,6 +13,7 @@ public class VehicleGeneration : MonoBehaviour
     public int vehicleCount = 0;
     public int carLimit = 100;
     GameObject specificVehicle;
+    GameObject specificVehicle2;
     // Start is called before the first frame update
     void Start()
     {
@@ -22,9 +23,10 @@ public class VehicleGeneration : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        //GenerateSpecificVehicle();
+        GenerateSpecificVehicle();
+        GenerateSpecificVehicle2();
     }
 
     public void SetEntryPoints()
@@ -72,12 +74,29 @@ public class VehicleGeneration : MonoBehaviour
         {
             specificVehicle = Instantiate(vehicle, entryPoints[3], Quaternion.identity);
             specificVehicle.name = "Specific Vehicle";
+            specificVehicle.GetComponent<VehicleMovement>().maximumSpeed = 1f;
         }
         else
         {
             Vector3 goal = new Vector3(542f, 0f, 425.3f);
-            if (specificVehicle.GetComponent<RoadSystemNavigator>().Goal != goal)
+            if (specificVehicle.GetComponent<RoadSystemNavigator>().Goal != goal) { }
                 specificVehicle.GetComponent<RoadSystemNavigator>().Goal = goal;
+        }
+    }
+
+    private void GenerateSpecificVehicle2()
+    {
+        if (!specificVehicle2)
+        {
+            specificVehicle2 = Instantiate(vehicle, entryPoints[3], Quaternion.identity);
+            specificVehicle2.name = "Specific Vehicle 2";
+            specificVehicle2.GetComponent<VehicleMovement>().maximumSpeed = 10f;
+        }
+        else
+        {
+            Vector3 goal = new Vector3(542f, 0f, 425.3f);
+            if (specificVehicle2.GetComponent<RoadSystemNavigator>().Goal != goal)
+                specificVehicle2.GetComponent<RoadSystemNavigator>().Goal = goal;
         }
     }
 }

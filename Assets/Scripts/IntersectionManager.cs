@@ -22,7 +22,7 @@ public class IntersectionManager : MonoBehaviour
         StartCoroutine(MoveAndStart());
     }
 
-    void Update()
+    void FixedUpdate()
     {
         SetupTrafficLight();
     }

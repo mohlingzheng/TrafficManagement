@@ -31,7 +31,7 @@ public class InputManager : MonoBehaviour
         
     }
 
-    void Update()
+    void FixedUpdate()
     {
         ButtonInteraction();
         pointedGameObject = ShootRaycast();
