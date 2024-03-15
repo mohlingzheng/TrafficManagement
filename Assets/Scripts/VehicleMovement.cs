@@ -5,25 +5,28 @@ using UnityEngine;
 
 public class VehicleMovement : MonoBehaviour
 {
-
+    [Header("Debugging")]
     public List<Bezier.OrientedPoint> movePoints;
     private int currentPoint = 0;
     private RoadSystemNavigator navigator;
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
 
+    [Header("Vehicle Attribute")]
     private float arriveThreshold = 5f;
-
     public float currentSpeed = 0f;
     public float desiredSpeed;
     public float rotationSpeed = 10f;
     public Vector3 movingDirection;
-    public float distanceDetect;
 
+    [Header("Car Following Model")]
     public float currentAcceleration = 5f;
     public float nextObjectSpeed;
     public float relativeSpeed;
     float maxDistance = 50f;
+    public float distanceDetect;
+
+    private TrafficLightState trafficLightState;
 
     // Start is called before the first frame update
     void Start()
@@ -71,7 +74,10 @@ public class VehicleMovement : MonoBehaviour
 
             if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
             {
-                vehicleGeneration.ReduceVehicleCount(1);
+                if (gameObject.name != "Specific Vehicle 2" && gameObject.name != "Specific Vehicle")
+                {
+                    vehicleGeneration.ReduceVehicleCount(1);
+                }
                 Destroy(gameObject);
             }
         }
@@ -122,7 +128,7 @@ public class VehicleMovement : MonoBehaviour
             distanceBetween = hit.Value.distance;
             nextObjectSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().currentSpeed;
         }
-        else if (hit.HasValue && DoHitHaveLayer(hit.Value, LayerMask.NameToLayer("Invisible")) && hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsRedLight())
+        else if (hit.HasValue && DoHitHaveLayer(hit.Value, LayerMask.NameToLayer("Invisible")) && hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red))
         {
             distanceBetween = hit.Value.distance;
             nextObjectSpeed = 0f;

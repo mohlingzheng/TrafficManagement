@@ -2,6 +2,7 @@ using Barmetler.RoadSystem;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -71,6 +72,7 @@ public class InputManager : MonoBehaviour
         if (XPressed || Input.GetKeyDown(KeyCode.Y))
         {
             Debug.Log("X Pressed");
+            Debug.Log("Keyboard Y clicked");
             roadBuildingManager.BuildRoad();
         }
         APressed = Input.GetButtonDown("A");
@@ -83,8 +85,21 @@ public class InputManager : MonoBehaviour
         {
             Debug.Log("B Pressed");
         }
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            Debug.Log("Keyboard U clicked");
+            TestButtonClick();
+        }
 
 
+    }
+
+    private void TestButtonClick()
+    {
+        roadSystem.RebuildAllRoads();
+        EditorUtility.SetDirty(roadSystem);
+        SceneView.RepaintAll();
+        Debug.Log("rebuild done");
     }
 
     public GameObject ShootRaycast()

@@ -49,11 +49,11 @@ public class IntersectionManager : MonoBehaviour
                 }
                 if (IsStringInsideArray(currentState, roadAnchor.name))
                 {
-                    block.GetComponent<TrafficLightLogic>().SetCurrentState("green");
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
                 else
                 {
-                    block.GetComponent<TrafficLightLogic>().SetCurrentState("red");
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Red);
                 }
 
             }
@@ -76,11 +76,11 @@ public class IntersectionManager : MonoBehaviour
                 }
                 if (IsStringInsideArray(currentState, roadAnchor.name))
                 {
-                    block.GetComponent<TrafficLightLogic>().SetCurrentState("green");
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
                 else
                 {
-                    block.GetComponent<TrafficLightLogic>().SetCurrentState("red");
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Red);
                 }
 
             }

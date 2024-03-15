@@ -7,13 +7,7 @@ public class TrafficLightLogic : MonoBehaviour
 {
     // Start is called before the first frame update
     RaycastHit hit;
-    enum States
-    {
-        red,
-        yellow,
-        green
-    }
-    public string currentState = States.red.ToString();
+    public TrafficLightState currentState = TrafficLightState.Red;
     public int[] durations = new int[3];
 
     void Start()
@@ -27,7 +21,7 @@ public class TrafficLightLogic : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (IsRedLight())
+        if (IsSameLight(TrafficLightState.Red))
             Debug.DrawRay(transform.position, transform.forward, Color.red);
         else
             Debug.DrawRay(transform.position,transform.forward, Color.green);
@@ -37,24 +31,24 @@ public class TrafficLightLogic : MonoBehaviour
     {
         while (true)
         {
-            currentState = States.green.ToString();
+            currentState = TrafficLightState.Green;
             yield return new WaitForSeconds(durations[0]);
             //currentState = States.yellow.ToString();
             //yield return new WaitForSeconds(durations[1]);
-            currentState = States.red.ToString();
+            currentState = TrafficLightState.Red;
             yield return new WaitForSeconds(durations[2]);
         }
     }
 
-    public bool IsRedLight()
+    public bool IsSameLight(TrafficLightState trafficLightState)
     {
-        if (currentState == States.red.ToString())
+        if (currentState == trafficLightState)
             return true;
         return false;
     }
     
-    public void SetCurrentState(string state)
+    public void SetCurrentState(TrafficLightState trafficLightState)
     {
-        currentState = state;
+        currentState = trafficLightState;
     }
 }
