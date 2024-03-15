@@ -8,9 +8,6 @@ using UnityEngine.UI;
 
 public class InputManager : MonoBehaviour
 {
-    public event Action<Ray> OnMouseClick, OnMouseHold;
-    public event Action OnMouseUp, OnEscape;
-
     public Camera mainCamera;
     public Button pauseButton;
     public Button resumeButton;

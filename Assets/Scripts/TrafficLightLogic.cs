@@ -13,57 +13,48 @@ public class TrafficLightLogic : MonoBehaviour
         yellow,
         green
     }
-    public string state = States.red.ToString();
-    public float maxDistance = 5f;
-    Vector3 raycastPosition;
-    Vector3 raycastDirection;
+    public string currentState = States.red.ToString();
     public int[] durations = new int[3];
 
     void Start()
     {
-        raycastPosition = transform.position + new Vector3(0f, 1.5f, 0f);
-        raycastDirection = transform.right;
-        durations[0] = 5;
+        durations[0] = 3;
         durations[1] = 3;
-        durations[2] = 5;
+        durations[2] = 3;
 
-        StartCoroutine(TrafficLightCycle());
+        //StartCoroutine(TrafficLightCycle());
     }
 
-    // Update is called once per frame
-    void Update()
+    private void FixedUpdate()
     {
-        if(Physics.Raycast(raycastPosition, raycastDirection, out hit, maxDistance))
-        {
-            if (hit.collider.gameObject.tag == "Vehicle")
-            {
-                if (state == States.red.ToString() || state == States.yellow.ToString())
-                {
-                    hit.collider.gameObject.GetComponent<VehicleMovement>().VehicleStop();
-                }
-                else if(state == States.green.ToString())
-                {
-                    hit.collider.gameObject.GetComponent<VehicleMovement>().VehicleMove();
-                }
-                Debug.DrawRay(raycastPosition, raycastDirection * maxDistance, Color.green);
-            }
-        }
+        if (IsRedLight())
+            Debug.DrawRay(transform.position, transform.forward, Color.red);
         else
-        {
-            Debug.DrawRay(raycastPosition, raycastDirection * maxDistance, Color.red);
-        }
+            Debug.DrawRay(transform.position,transform.forward, Color.green);
     }
 
     IEnumerator TrafficLightCycle()
     {
         while (true)
         {
-            state = States.green.ToString();
+            currentState = States.green.ToString();
             yield return new WaitForSeconds(durations[0]);
-            state = States.yellow.ToString();
-            yield return new WaitForSeconds(durations[1]);
-            state = States.red.ToString();
+            //currentState = States.yellow.ToString();
+            //yield return new WaitForSeconds(durations[1]);
+            currentState = States.red.ToString();
             yield return new WaitForSeconds(durations[2]);
         }
+    }
+
+    public bool IsRedLight()
+    {
+        if (currentState == States.red.ToString())
+            return true;
+        return false;
+    }
+    
+    public void SetCurrentState(string state)
+    {
+        currentState = state;
     }
 }

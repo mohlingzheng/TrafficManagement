@@ -70,18 +70,19 @@ public class VehicleGeneration : MonoBehaviour
 
     private void GenerateSpecificVehicle()
     {
+        Vector3 spawnPosition = new Vector3(226.8f, 0f, 28.5f);
         if (!specificVehicle)
         {
-            specificVehicle = Instantiate(vehicle, entryPoints[3], Quaternion.identity);
+            specificVehicle = Instantiate(vehicle, spawnPosition, Quaternion.identity);
             specificVehicle.name = "Specific Vehicle";
-            specificVehicle.GetComponent<VehicleMovement>().maximumSpeed = 1f;
+            specificVehicle.GetComponent<VehicleMovement>().desiredSpeed = 1f;
         }
-        else
-        {
-            Vector3 goal = new Vector3(542f, 0f, 425.3f);
-            if (specificVehicle.GetComponent<RoadSystemNavigator>().Goal != goal) { }
-                specificVehicle.GetComponent<RoadSystemNavigator>().Goal = goal;
-        }
+        //else
+        //{
+        //    Vector3 goal = new Vector3(542f, 0f, 425.3f);
+        //    if (specificVehicle.GetComponent<RoadSystemNavigator>().Goal != goal) { }
+        //        specificVehicle.GetComponent<RoadSystemNavigator>().Goal = goal;
+        //}
     }
 
     private void GenerateSpecificVehicle2()
@@ -90,13 +91,15 @@ public class VehicleGeneration : MonoBehaviour
         {
             specificVehicle2 = Instantiate(vehicle, entryPoints[3], Quaternion.identity);
             specificVehicle2.name = "Specific Vehicle 2";
-            specificVehicle2.GetComponent<VehicleMovement>().maximumSpeed = 10f;
+            specificVehicle2.GetComponent<VehicleMovement>().desiredSpeed = 10f;
         }
-        else
-        {
-            Vector3 goal = new Vector3(542f, 0f, 425.3f);
-            if (specificVehicle2.GetComponent<RoadSystemNavigator>().Goal != goal)
-                specificVehicle2.GetComponent<RoadSystemNavigator>().Goal = goal;
-        }
+        //else
+        //{
+        //    Vector3 goal = new Vector3(542f, 0f, 425.3f);
+        //    if (specificVehicle2.GetComponent<RoadSystemNavigator>().Goal != goal)
+        //    {
+        //        specificVehicle2.GetComponent<RoadSystemNavigator>().Goal = goal;
+        //    }
+        //}
     }
 }
