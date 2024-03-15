@@ -17,11 +17,16 @@ public class InputManager : MonoBehaviour
     bool YPressed = false, XPressed = false, APressed = false, BPressed = false;
     public RoadSystem roadSystem;
 
-    // Outline Related
+    [Header("Input Mode")]
+    public InputMode inputMode;
+
+    [Header("Outline")]
+    public GameObject pointedGameObject = null;
     public Transform highlight;
     public Transform selection;
 
-    public GameObject pointedGameObject = null;
+    [Header("Canvas")]
+    public GameObject buttonPanel;
 
 
     void Start()
@@ -34,6 +39,8 @@ public class InputManager : MonoBehaviour
         ButtonInteraction();
         pointedGameObject = ShootRaycast();
     }
+
+
 
     public void YButtonInteractButton()
     {
@@ -61,6 +68,8 @@ public class InputManager : MonoBehaviour
 
     void ButtonInteraction()
     {
+        // Input.GetAxis or Input.GetButtonDown
+        // For Keyboard: Input.GetKeyDown(KeyCode.)
         YPressed = Input.GetButtonDown("Y");
         if (YPressed)
         {
@@ -85,22 +94,54 @@ public class InputManager : MonoBehaviour
         {
             Debug.Log("B Pressed");
         }
-        if (Input.GetKeyDown(KeyCode.U))
+
+        if (Input.GetButtonDown("LB"))
         {
-            Debug.Log("Keyboard U clicked");
-            TestButtonClick();
+
         }
 
+        HandleInputModeChange();
 
     }
 
-    private void TestButtonClick()
+    private void ChangeUIWithInputMode()
     {
-        roadSystem.RebuildAllRoads();
-        EditorUtility.SetDirty(roadSystem);
-        SceneView.RepaintAll();
-        Debug.Log("rebuild done");
+        if (inputMode == InputMode.Default)
+        {
+            buttonPanel.transform.GetChild(0).GetComponent<Image>().color = Color.green;
+            buttonPanel.transform.GetChild(1).GetComponent<Image>().color = Color.white;
+        }
+        else if (inputMode == InputMode.Build)
+        {
+            buttonPanel.transform.GetChild(0).GetComponent<Image>().color = Color.white;
+            buttonPanel.transform.GetChild(1).GetComponent<Image>().color = Color.green;
+        }
     }
+
+    private void HandleInputModeChange()
+    {
+        int size = Enum.GetValues(typeof(InputMode)).Length;
+        int currentMode = (int)inputMode;
+        if (Input.GetButtonDown("LB"))
+        {
+            currentMode = (currentMode - 1);
+            currentMode = Mathf.Clamp(currentMode, 0, size);
+            inputMode = (InputMode)currentMode;
+            Debug.Log("Change InputMode to " + inputMode);
+            ChangeUIWithInputMode();
+        }
+
+        if (Input.GetButtonDown("RB"))
+        {
+            currentMode = (currentMode + 1);
+            currentMode = Mathf.Clamp(currentMode, 0, size);
+            inputMode = (InputMode)currentMode;
+            Debug.Log("Change InputMode to " + inputMode);
+            ChangeUIWithInputMode();
+        }
+
+    }
+
 
     public GameObject ShootRaycast()
     {
@@ -108,7 +149,6 @@ public class InputManager : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
         Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
         if(Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject()){
-            //Debug.Log("hit " + hit.collider.gameObject.name);
             OutlineGameObject(hit.transform, hit);
             return hit.collider.gameObject;
         }

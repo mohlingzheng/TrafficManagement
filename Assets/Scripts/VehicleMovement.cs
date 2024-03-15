@@ -179,7 +179,7 @@ public class VehicleMovement : MonoBehaviour
         GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
         if (gameObject.name == "Specific Vehicle 2" || gameObject.name == "Specific Vehicle")
         {
-            goalObject = goalObjects[9];
+            goalObject = goalObjects[5];
         }
         else if (goalObjects.Length > 0)
         {

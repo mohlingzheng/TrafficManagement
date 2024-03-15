@@ -1,4 +1,6 @@
 using Barmetler.RoadSystem;
+using System.Collections.Generic;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,6 +11,7 @@ public class RoadBuildingManager : MonoBehaviour
     public GameObject road2GO;
     public GameObject roadGameObject;
     public GameObject intersectionGB;
+    public List<Road> roadList = new List<Road>();
 
 
     // Start is called before the first frame update
@@ -20,7 +23,7 @@ public class RoadBuildingManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        RebuildAffectedRoad();
     }
 
     public void BuildRoad()
@@ -50,12 +53,15 @@ public class RoadBuildingManager : MonoBehaviour
         first_interesection.transform.localPosition = firstPositionClicked;
         first_interesection.transform.localRotation = Quaternion.Euler(0, 50f, 0);
         first_interesection.name = "first intersection";
+        first_interesection.tag = Tag.Intersection3.ToString();
         RoadAnchor[] roadAnchors = first_interesection.GetComponentsInChildren<RoadAnchor>();
 
         Road first_roadGO_road = first_roadGO.GetComponent<Road>();
         first_roadGO_road.end = roadAnchors[1];
         first_roadGO_road.start = road1_start;
         first_roadGO_road.AutoSetAllControlPoints();
+
+        roadList.Add(first_roadGO_road);
 
         GameObject second_roadGO;
         second_roadGO = Instantiate(roadGameObject, roadSystem.transform);
@@ -66,8 +72,9 @@ public class RoadBuildingManager : MonoBehaviour
         Road second_roadGO_road = second_roadGO.GetComponent<Road>();
         second_roadGO_road.end = road1_end;
         second_roadGO_road.start = roadAnchors[2];
-
         second_roadGO_road.AutoSetAllControlPoints();
+
+        roadList.Add(second_roadGO_road);
 
         // 
 
@@ -92,12 +99,15 @@ public class RoadBuildingManager : MonoBehaviour
         second_intersection.transform.localPosition = secondPositionClicked;
         second_intersection.transform.localRotation = Quaternion.Euler(0, -90f, 0);
         second_intersection.name = "second intersection";
+        second_intersection.tag = Tag.Intersection3.ToString();
         RoadAnchor[] roadAnchors2 = second_intersection.GetComponentsInChildren<RoadAnchor>();
 
         Road first_roadGO2_road = first_roadGO2.GetComponent<Road>();
         first_roadGO2_road.start = road2_start;
         first_roadGO2_road.end = roadAnchors2[2];
         first_roadGO2_road.AutoSetAllControlPoints();
+
+        roadList.Add(first_roadGO2_road);
 
         GameObject second_roadGO2;
         second_roadGO2 = Instantiate(roadGameObject, roadSystem.transform);
@@ -108,8 +118,9 @@ public class RoadBuildingManager : MonoBehaviour
         Road second_roadGO2_road = second_roadGO2.GetComponent<Road>();
         second_roadGO2_road.end = road2_end;
         second_roadGO2_road.start = roadAnchors2[1];
-
         second_roadGO2_road.AutoSetAllControlPoints();
+
+        roadList.Add(second_roadGO2_road);
 
         //
 
@@ -123,33 +134,25 @@ public class RoadBuildingManager : MonoBehaviour
         bet_intersection_roadGO_road.end = roadAnchors2[0];
         second_roadGO2_road.AutoSetAllControlPoints();
 
-        road1GO.GetComponent<RoadMeshGenerator>().GenerateRoadMesh();
+        roadList.Add(bet_intersection_roadGO_road);
 
-
-
-        //GameObject road1split_1, road1split_2, road1split_intersection;
-
-
-        //ras[1].SetRoad(road1.GetComponent<Road>());
-        //road.end = ras[1];
-
-
-        //road1split_2 = Instantiate(roadGameObject, end.transform.position, Quaternion.identity);
-        //road1split_2.GetComponent<Road>().end = end;
-        //road1split_2.name = "road1split_2";
-        //Road road1split_2_Road = road1split_2.GetComponent<Road>();
-        //ras[2].SetRoad(road1split_2.GetComponent<Road>());
-        //road1split_2_Road.
-
-        //GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
-        //foreach (GameObject vehicle in vehicles)
-        //{
-        //    vehicle.GetComponent<RoadSystemNavigator>().CalculateWayPointsSync();
-        //}
 
         roadSystem.RebuildAllRoads();
 
         SceneView.RepaintAll();
 
+    }
+
+    public void RebuildAffectedRoad()
+    {
+        if (roadList.Count > 0)
+        {
+            roadSystem.ConstructGraph();
+            foreach (var road in roadList)
+            {
+                road.OnCurveChanged(true);
+            }
+            roadList.Clear();
+        }
     }
 }

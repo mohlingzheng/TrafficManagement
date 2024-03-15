@@ -1,12 +1,6 @@
 using Barmetler.RoadSystem;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Drawing;
 using UnityEngine;
-using UnityEngine.UIElements;
-using Color = UnityEngine.Color;
 
 public class IntersectionManager : MonoBehaviour
 {

@@ -34,8 +34,8 @@ public class CameraController : MonoBehaviour
     {
         newPosition += transform.right * Input.GetAxis("Horizontal") * movementSpeed;
         newPosition += transform.forward * Input.GetAxis("Vertical") * movementSpeed;
-        newRotation *= Quaternion.Euler(new Vector3(0f, Input.GetAxis("RightVertical"), 0f) * rotationAmount);
-        newZoom += -Input.GetAxis("RightHorizontal") * zoomAmount;
+        newRotation *= Quaternion.Euler(new Vector3(0f, Input.GetAxis("RightHorizontal"), 0f) * rotationAmount);
+        newZoom += -Input.GetAxis("RightVertical") * zoomAmount;
 
         transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * movementTime);
