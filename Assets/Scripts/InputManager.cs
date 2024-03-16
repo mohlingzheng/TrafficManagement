@@ -14,30 +14,38 @@ public class InputManager : MonoBehaviour
     public Button resumeButton;
     public Image pointer;
     public RoadBuildingManager roadBuildingManager;
-    bool YPressed = false, XPressed = false, APressed = false, BPressed = false;
     public RoadSystem roadSystem;
 
     [Header("Input Mode")]
-    public InputMode inputMode;
-
-    [Header("Outline")]
-    public GameObject pointedGameObject = null;
-    public Transform highlight;
-    public Transform selection;
+    public InputMode inputMode = InputMode.Build;
 
     [Header("Canvas")]
     public GameObject buttonPanel;
 
+    [Header("Raycast")]
+    public Vector3 pointedPosition = Vector3.zero;
+    public GameObject pointedGameObject = null;
+
+
+    [Header("Outline")]
+    public Transform highlight;
+    public Transform selection;
+
+    [Header("Road Building")]
+    public Vector3 firstPoint = Vector3.zero;
+    public Vector3 secondPoint = Vector3.zero;
+    public RoadAnchor firstAnchor = null;
+    public RoadAnchor secondAnchor = null;
+
 
     void Start()
     {
-        
+        ChangeUIWithInputMode();
     }
 
     void FixedUpdate()
     {
         ButtonInteraction();
-        pointedGameObject = ShootRaycast();
     }
 
 
@@ -70,38 +78,142 @@ public class InputManager : MonoBehaviour
     {
         // Input.GetAxis or Input.GetButtonDown
         // For Keyboard: Input.GetKeyDown(KeyCode.)
-        YPressed = Input.GetButtonDown("Y");
-        if (YPressed)
-        {
-            Debug.Log("Y Pressed");
-            //YButtonInteractButton();
-            roadSystem.RebuildAllRoads();
-        }
-        XPressed = Input.GetButtonDown("X");
-        if (XPressed || Input.GetKeyDown(KeyCode.Y))
-        {
-            Debug.Log("X Pressed");
-            Debug.Log("Keyboard Y clicked");
-            roadBuildingManager.BuildRoad();
-        }
-        APressed = Input.GetButtonDown("A");
-        if (APressed)
-        {
-            Debug.Log("A Pressed");
-        }
-        BPressed = Input.GetButtonDown("B");
-        if (BPressed)
-        {
-            Debug.Log("B Pressed");
-        }
-
-        if (Input.GetButtonDown("LB"))
-        {
-
-        }
-
         HandleInputModeChange();
+        GetRaycastPositionHit();
+        GetRaycastObjectHit();
+        if (inputMode == InputMode.Default)
+        {
+            SelecteOutlineObject();
+        }
+        else if (inputMode == InputMode.Build)
+        {
+            GetBuildingRoadPositions();
+        }
 
+    }
+
+    public void GetRaycastObjectHit()
+    {
+        RaycastHit hit;
+        Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
+        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            OutlineGameObject(hit.transform, hit);
+            pointedGameObject = hit.collider.gameObject;
+        }
+        else
+            pointedGameObject = null;
+    }
+
+    public void OutlineGameObject(Transform transform, RaycastHit raycastHit)
+    {
+        // if previously highlight some gameobject, disable it and set to null
+        if (highlight != null)
+        {
+            highlight.gameObject.GetComponent<Outline>().enabled = false;
+            highlight = null;
+        }
+
+        highlight = transform;
+
+        if (highlight != selection)
+        {
+            if (highlight.gameObject.GetComponent<Outline>() != null)
+            {
+                highlight.gameObject.GetComponent<Outline>().enabled = true;
+            }
+            else
+            {
+                Outline outline = highlight.gameObject.AddComponent<Outline>();
+                outline.OutlineColor = new Color(91, 250, 98);
+                outline.OutlineWidth = 2;
+                outline.enabled = true;
+                //highlight.gameObject.GetComponent<Outline>().OutlineColor = Color.magenta;
+                //highlight.gameObject.GetComponent<Outline>().OutlineWidth = 7.0f;
+            }
+            //Debug.Log(highlight.name);
+        }
+        else
+        {
+            highlight = null;
+        }
+
+        
+    }
+
+    private void SelecteOutlineObject()
+    {
+        if (Input.GetButtonDown("A"))
+        {
+            if (highlight)
+            {
+                if (selection != null)
+                {
+                    selection.gameObject.GetComponent<Outline>().enabled = false;
+                }
+                selection = highlight;
+                Outline outline = selection.gameObject.GetComponent<Outline>();
+                outline.enabled = true;
+                outline.OutlineColor = new Color(91, 250, 98);
+                outline.OutlineWidth = 2;
+                highlight = null;
+            }
+        }
+
+        if (Input.GetButtonDown("B"))
+        {
+            if (selection != null)
+            {
+                selection.gameObject.GetComponent<Outline>().enabled = false;
+                selection = null;
+            }
+        }
+    }
+
+    private void GetBuildingRoadPositions()
+    {
+        if (Input.GetButtonDown("A") && pointedGameObject.CompareTag("Road"))
+        {
+            if (firstPoint == Vector3.zero)
+            {
+                firstPoint = pointedPosition;
+                firstAnchor = roadBuildingManager.AddIntersectionToSingleRoad(pointedGameObject, firstPoint, Quaternion.Euler(0, 50f, 0));
+            }
+            else
+            {
+                secondPoint = pointedPosition;
+                secondAnchor = roadBuildingManager.AddIntersectionToSingleRoad2(pointedGameObject, secondPoint, Quaternion.Euler(0, -90f, 0));
+            }
+            if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
+            {
+                roadBuildingManager.ConnectTwoIntersections(firstPoint, firstAnchor, secondAnchor);
+                firstPoint = Vector3.zero;
+                secondPoint = Vector3.zero;
+            }
+        }
+        if (Input.GetButtonDown("B"))
+        {
+            if (secondPoint != Vector3.zero)
+            {
+                secondPoint = Vector3.zero;
+            }
+            else
+            {
+                firstPoint = Vector3.zero;
+            }
+        }
+    }
+
+    public void GetRaycastPositionHit()
+    {
+        RaycastHit hit;
+        Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
+        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.white);
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("Terrain")))
+        {
+            pointedPosition = hit.point;
+        }
     }
 
     private void ChangeUIWithInputMode()
@@ -140,79 +252,5 @@ public class InputManager : MonoBehaviour
             ChangeUIWithInputMode();
         }
 
-    }
-
-
-    public GameObject ShootRaycast()
-    {
-        RaycastHit hit;
-        Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
-        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
-        if(Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject()){
-            OutlineGameObject(hit.transform, hit);
-            return hit.collider.gameObject;
-        }
-        else
-            return null;
-    }
-
-    public void OutlineGameObject(Transform transform, RaycastHit raycastHit)
-    {
-        // if previously highlight some gameobject, disable it and set to null
-        if (highlight != null)
-        {
-            highlight.gameObject.GetComponent<Outline>().enabled = false;
-            highlight = null;
-        }
-
-        highlight = transform;
-
-        if (highlight != selection)
-        {
-            if (highlight.gameObject.GetComponent<Outline>() != null)
-            {
-                highlight.gameObject.GetComponent<Outline>().enabled = true;
-            }
-            else
-            {
-                Outline outline = highlight.gameObject.AddComponent<Outline>();
-                outline.OutlineColor = new Color(91, 250, 98);
-                outline.OutlineWidth = 2;
-                outline.enabled = true;
-                //highlight.gameObject.GetComponent<Outline>().OutlineColor = Color.magenta;
-                //highlight.gameObject.GetComponent<Outline>().OutlineWidth = 7.0f;
-            }
-            //Debug.Log(highlight.name);
-        }
-        else
-        {
-            highlight = null;
-        }
-
-        if (APressed)
-        {
-            if (highlight)
-            {
-                if (selection != null)
-                {
-                    selection.gameObject.GetComponent<Outline>().enabled = false;
-                }
-                selection = highlight;
-                Outline outline = selection.gameObject.GetComponent<Outline>();
-                outline.enabled = true;
-                outline.OutlineColor = new Color(91, 250, 98);
-                outline.OutlineWidth = 2;
-                highlight = null;
-            }
-        }
-
-        if (BPressed)
-        {
-            if (selection != null)
-            {
-                selection.gameObject.GetComponent<Outline>().enabled = false;
-                selection = null;
-            }
-        }
     }
 }
