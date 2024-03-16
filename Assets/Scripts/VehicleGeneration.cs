@@ -19,7 +19,7 @@ public class VehicleGeneration : MonoBehaviour
     {
         SetEntryPoints();
         SetVehicle();
-        StartCoroutine(GenerateVehicle(2.5f));
+        StartCoroutine(GenerateVehicle(0.5f));
     }
 
     // Update is called once per frame
@@ -52,12 +52,9 @@ public class VehicleGeneration : MonoBehaviour
         {
             if (vehicleCount < carLimit)
             {
-                for (int i = 0; i < 4; i++)
-                {
-                    int random = Random.Range(0, entryPoints.Length);
-                    Instantiate(vehicle, entryPoints[random], Quaternion.identity);
-                    vehicleCount++;
-                }
+                int random = Random.Range(0, entryPoints.Length);
+                Instantiate(vehicle, entryPoints[random], Quaternion.identity);
+                vehicleCount++;
             } 
             yield return new WaitForSeconds(waitTime);
         }

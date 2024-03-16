@@ -32,7 +32,7 @@ public class VehicleMovement : MonoBehaviour
     void Start()
     {
         navigator = GetComponent<RoadSystemNavigator>();
-        navigator.currentRoadSystem = FindAnyObjectByType<RoadSystem>();
+        navigator.currentRoadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         desiredSpeed = Random.Range(25, 35);
         SetRandomGoal();

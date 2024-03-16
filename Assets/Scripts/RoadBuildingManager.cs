@@ -11,6 +11,7 @@ public class RoadBuildingManager : MonoBehaviour
     public GameObject roadPrefab;
     public GameObject intersectionGB;
     public List<Road> roadList = new List<Road>();
+    public List<Road> roadList2 = new List<Road>();
 
 
     // Start is called before the first frame update
@@ -142,7 +143,7 @@ public class RoadBuildingManager : MonoBehaviour
 
     //}
 
-    public RoadAnchor AddIntersectionToSingleRoad(GameObject roadGameObject, Vector3 position, Quaternion rotation)
+    public RoadAnchor AddIntersectionToSingleRoad(GameObject roadGameObject, Vector3 position)
     {
         // Get the connected Anchor, then remove this gameobject
         Road road = roadGameObject.GetComponent<Road>();
@@ -156,28 +157,17 @@ public class RoadBuildingManager : MonoBehaviour
         Destroy(road);
         Destroy(roadGameObject);
 
-
+        // create first road
         GameObject first_roadGO;
         first_roadGO = Instantiate(roadGameObject, roadSystem.transform);
         first_roadGO.transform.localPosition = road1_start.transform.position;
         first_roadGO.transform.localRotation = Quaternion.identity;
         first_roadGO.name = "road 1 first split";
 
-        GameObject first_interesection;
-        first_interesection = Instantiate(intersectionGB, roadSystem.transform);
-        first_interesection.transform.localPosition = position;
-        first_interesection.transform.localRotation = rotation;
-        first_interesection.name = "first intersection";
-        first_interesection.tag = Tag.Intersection3.ToString();
-        RoadAnchor[] roadAnchors = first_interesection.GetComponentsInChildren<RoadAnchor>();
-
         Road first_roadGO_road = first_roadGO.GetComponent<Road>();
-        first_roadGO_road.end = roadAnchors[1];
         first_roadGO_road.start = road1_start;
-        first_roadGO_road.AutoSetAllControlPoints();
 
-        roadList.Add(first_roadGO_road);
-
+        // create second road
         GameObject second_roadGO;
         second_roadGO = Instantiate(roadGameObject, roadSystem.transform);
         second_roadGO.transform.localPosition = road1_end.transform.position;
@@ -186,9 +176,25 @@ public class RoadBuildingManager : MonoBehaviour
 
         Road second_roadGO_road = second_roadGO.GetComponent<Road>();
         second_roadGO_road.end = road1_end;
-        second_roadGO_road.start = roadAnchors[2];
-        second_roadGO_road.AutoSetAllControlPoints();
 
+        // create intersection
+        Vector3 direction = (road1_start.transform.position - road1_end.transform.position).normalized;
+        direction = Vector3.Cross(direction, Vector3.up).normalized;
+        Quaternion rotation = Quaternion.LookRotation(direction);
+
+        GameObject first_interesection;
+        first_interesection = Instantiate(intersectionGB, roadSystem.transform);
+        first_interesection.transform.localPosition = position;
+        first_interesection.transform.localRotation = rotation;
+        first_interesection.name = "first intersection";
+        first_interesection.tag = Tag.Intersection3.ToString();
+        
+        RoadAnchor[] roadAnchors = first_interesection.GetComponentsInChildren<RoadAnchor>();
+        first_roadGO_road.end = roadAnchors[1];
+        second_roadGO_road.start = roadAnchors[2];
+
+
+        roadList.Add(first_roadGO_road);
         roadList.Add(second_roadGO_road);
 
         return roadAnchors[0];
