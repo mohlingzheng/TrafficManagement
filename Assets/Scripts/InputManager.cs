@@ -2,6 +2,7 @@ using Barmetler.RoadSystem;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -39,6 +40,9 @@ public class InputManager : MonoBehaviour
     public Vector3 secondPoint = Vector3.zero;
     public RoadAnchor firstAnchor = null;
     public RoadAnchor secondAnchor = null;
+    public GameObject firstSelectedGameObject = null;
+    public GameObject secondSelectedGameObject = null;
+    public bool confirm = false;
 
     [Header("Developer")]
     public VehicleGeneration vehicleGeneration;
@@ -194,20 +198,33 @@ public class InputManager : MonoBehaviour
             if (firstPoint == Vector3.zero)
             {
                 firstPoint = pointedPosition;
-                previewSystem.CreatePreviewRoad(pointedGameObject, firstPoint);
+                firstSelectedGameObject = pointedGameObject;
+                //firstAnchor = previewSystem.CreatePreviewRoad(pointedGameObject, firstPoint);
+                firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
             }
             else
             {
                 secondPoint = pointedPosition;
-                //secondAnchor = roadBuildingManager.AddIntersectionToSingleRoad2(pointedGameObject, secondPoint, Quaternion.Euler(0, -90f, 0));
+                secondSelectedGameObject = pointedGameObject;
+                //secondAnchor = previewSystem.CreatePreviewRoad(pointedGameObject, secondPoint);
+                secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
             }
             if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
             {
-                //roadBuildingManager.ConnectTwoIntersections(firstPoint, firstAnchor, secondAnchor);
-                firstPoint = Vector3.zero;
-                secondPoint = Vector3.zero;
+                roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
+                confirm = true;
             }
         }
+        else if (Input.GetButtonDown("A") && confirm)
+        {
+            firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
+            secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
+            roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
+            ResetRoadBuilding();
+            previewSystem.DestroyAllChild();
+        }
+
+        
 
         if (Input.GetButtonDown("B"))
         {
@@ -223,40 +240,15 @@ public class InputManager : MonoBehaviour
 
     }
 
-    private void GetBuildingRoadPositions()
+    public void ResetRoadBuilding()
     {
-        if (Input.GetButtonDown("A") && pointedGameObject.CompareTag("Road"))
-        {
-            if (firstPoint == Vector3.zero)
-            {
-                firstPoint = pointedPosition;
-                firstAnchor = roadBuildingManager.AddIntersectionToSingleRoad(pointedGameObject, firstPoint);
-            }
-            else
-            {
-                secondPoint = pointedPosition;
-                secondAnchor = roadBuildingManager.AddIntersectionToSingleRoad2(pointedGameObject, secondPoint, Quaternion.Euler(0, -90f, 0));
-            }
-            if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
-            {
-                roadBuildingManager.ConnectTwoIntersections(firstPoint, firstAnchor, secondAnchor);
-                firstPoint = Vector3.zero;
-                secondPoint = Vector3.zero;
-            }
-        }
-
-        if (Input.GetButtonDown("B"))
-        {
-            if (secondPoint != Vector3.zero)
-            {
-                secondPoint = Vector3.zero;
-            }
-            else
-            {
-                firstPoint = Vector3.zero;
-            }
-        }
-        
+        firstPoint = Vector3.zero;
+        secondPoint = Vector3.zero;
+        firstAnchor = null;
+        secondAnchor = null;
+        firstSelectedGameObject = null;
+        secondSelectedGameObject = null;
+        confirm = false;
     }
 
     public void GetRaycastPositionHit()

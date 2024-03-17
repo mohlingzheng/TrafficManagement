@@ -14,6 +14,7 @@ public class VehicleGeneration : MonoBehaviour
     public int carLimit = 100;
     GameObject specificVehicle;
     GameObject specificVehicle2;
+    public bool GenerateFixVehicle = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,8 +26,11 @@ public class VehicleGeneration : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        GenerateSpecificVehicle();
-        GenerateSpecificVehicle2();
+        if (GenerateFixVehicle)
+        {
+            GenerateSpecificVehicle();
+            GenerateSpecificVehicle2();
+        }
     }
 
     public void SetEntryPoints()

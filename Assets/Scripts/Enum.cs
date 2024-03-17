@@ -22,3 +22,9 @@ public enum InputMode
     Default = 0,
     Build = 1,
 }
+
+public enum BuildMode
+{
+    Preview = 0,
+    Actual = 1,
+}
