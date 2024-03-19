@@ -199,14 +199,12 @@ public class InputManager : MonoBehaviour
             {
                 firstPoint = pointedPosition;
                 firstSelectedGameObject = pointedGameObject;
-                //firstAnchor = previewSystem.CreatePreviewRoad(pointedGameObject, firstPoint);
                 firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
             }
             else
             {
                 secondPoint = pointedPosition;
                 secondSelectedGameObject = pointedGameObject;
-                //secondAnchor = previewSystem.CreatePreviewRoad(pointedGameObject, secondPoint);
                 secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
             }
             if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
@@ -231,10 +229,26 @@ public class InputManager : MonoBehaviour
             if (secondPoint != Vector3.zero)
             {
                 secondPoint = Vector3.zero;
+                secondAnchor = null;
+                secondSelectedGameObject = null;
+                foreach (Transform child in previewRoadSystem.transform)
+                {
+                    if (child.name == "2")
+                        Destroy(child.gameObject);
+                }
+                roadBuildingManager.ReduceCount();
             }
-            else
+            else if (firstPoint != Vector3.zero)
             {
                 firstPoint = Vector3.zero;
+                firstAnchor = null;
+                firstSelectedGameObject = null;
+                foreach (Transform child in previewRoadSystem.transform)
+                {
+                    if (child.name == "1")
+                        Destroy(child.gameObject);
+                }
+                roadBuildingManager.ReduceCount();
             }
         }
 

@@ -15,6 +15,9 @@ public class RoadBuildingManager : MonoBehaviour
     public List<Road> previewRoadList = new List<Road>();
 
     public Material TransparentMaterial;
+    public static int count = 1;
+    const int maxCount = 2;
+    const int minCount = 1;
 
 
     // Start is called before the first frame update
@@ -45,6 +48,8 @@ public class RoadBuildingManager : MonoBehaviour
         {
             first_int = CreateObjectAtPosition(roadSystem, Intersection3Prefab, road1_start.transform.parent.localPosition, road1_start.transform.parent.rotation);
             second_int = CreateObjectAtPosition(roadSystem, Intersection3Prefab, road1_end.transform.parent.localPosition, road1_end.transform.parent.rotation);
+            first_int.name = count.ToString();
+            second_int.name = count.ToString();
         }
 
         else
@@ -92,6 +97,9 @@ public class RoadBuildingManager : MonoBehaviour
         {
             previewRoadList.Add(first_roadGO_road);
             previewRoadList.Add(second_roadGO_road);
+            first_roadGO_road.name = count.ToString();
+            second_roadGO_road.name = count.ToString();
+            middle_interesection.name = count.ToString();
         }
         else
         {
@@ -105,6 +113,9 @@ public class RoadBuildingManager : MonoBehaviour
         second_roadGO_road.Clear();
         second_roadGO_road.RefreshEndPoints();
 
+        count++;
+        Mathf.Clamp(count, minCount, maxCount);
+
         return GetRoadAnchorWithoutConnection(roadAnchors);
     }
 
@@ -116,6 +127,7 @@ public class RoadBuildingManager : MonoBehaviour
         LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
         if (buildMode == BuildMode.Preview)
         {
+            bet_intersection_roadGO.name = (count-1).ToString();
             previewRoadList.Add(bet_intersection_roadGO_road);
         }
         else
@@ -234,6 +246,14 @@ public class RoadBuildingManager : MonoBehaviour
             previewRoadList.Clear();
         }
     }
+
+
+    public void ReduceCount()
+    {
+        count--;
+        Mathf.Clamp(count, minCount, maxCount);
+    }
+
 
     private void MakeTransparent(Transform parent)
     {

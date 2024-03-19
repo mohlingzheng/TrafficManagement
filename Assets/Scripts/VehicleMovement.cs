@@ -11,6 +11,8 @@ public class VehicleMovement : MonoBehaviour
     private RoadSystemNavigator navigator;
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
+    public bool finalGoal = false;
+    public bool movePointReady = false;
 
     [Header("Vehicle Attribute")]
     private float arriveThreshold = 5f;
@@ -36,12 +38,14 @@ public class VehicleMovement : MonoBehaviour
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         desiredSpeed = Random.Range(25, 35);
         SetRandomGoal();
+        SetMovePoints();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        SetMovePoints();
+        if (!movePointReady)
+            SetMovePoints();
         DynamicSpeed();
     }
 
@@ -56,15 +60,23 @@ public class VehicleMovement : MonoBehaviour
     {
         if (currentPoint < movePoints.Count)
         {
+            Debug.Log(currentPoint + " " + movePoints.Count);
             Vector3 forwardDirection;
             if (currentPoint == movePoints.Count - 1)
+            {
                 forwardDirection = (goalObject.gameObject.transform.position - movePoints[currentPoint].position).normalized;
+                //finalGoal = true;
+            }
             else
                 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
             Vector3 target = movePoints[currentPoint].position + Vector3.Cross(Vector3.up, forwardDirection).normalized * -1.5f;
             movingDirection = (target - transform.position).normalized;
 
             transform.position = Vector3.MoveTowards(transform.position, target, currentSpeed * Time.deltaTime);
+
+            float distance = Vector3.Distance(transform.position, movePoints[currentPoint].position);
+            if (distance < 2f)
+                movePoints.RemoveAt(0);
 
             if (movingDirection != Vector3.zero && !NearToZero())
             {
@@ -169,9 +181,24 @@ public class VehicleMovement : MonoBehaviour
 
     public void SetMovePoints()
     {
-        movePoints = navigator.CurrentPoints;
-        Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
-        movePoints.Add(goal);
+        if (!finalGoal)
+        {
+            movePoints = new List<Bezier.OrientedPoint>(navigator.CurrentPoints);
+            Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
+            movePoints.Add(goal);
+        }
+        else
+        {
+            movePoints.Clear();
+            Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
+            movePoints.Add(goal);
+        }
+
+        if (movePoints.Count > 1)
+        {
+            movePointReady = true;
+        }
+
     }
 
     public void SetRandomGoal()
