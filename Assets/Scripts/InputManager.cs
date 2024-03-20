@@ -96,8 +96,8 @@ public class InputManager : MonoBehaviour
         }
         else if (inputMode == InputMode.Build)
         {
-            //GetBuildingRoadPositions();
-            GetBuildingRoadPositionsForPreview();
+            //GetBuildingRoadPositionsForPreview();
+            GetInputForPreviewBuilding();
         }
         DeveloperInteraction();
     }
@@ -197,29 +197,40 @@ public class InputManager : MonoBehaviour
         {
             if (firstPoint == Vector3.zero)
             {
+                Debug.Log("first preview");
                 firstPoint = pointedPosition;
                 firstSelectedGameObject = pointedGameObject;
                 firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
             }
             else
             {
+                Debug.Log("second preview");
                 secondPoint = pointedPosition;
                 secondSelectedGameObject = pointedGameObject;
                 secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
             }
             if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
             {
+                Debug.Log("connect preview");
                 roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
                 confirm = true;
             }
         }
         else if (Input.GetButtonDown("A") && confirm)
         {
+            Debug.Log("implement build");
             firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
             secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
             roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
             ResetRoadBuilding();
             previewSystem.DestroyAllChild();
+            GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
+            foreach (GameObject vehicle in vehicles)
+            {
+                VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();
+                vehicleMovement.RecalculatePath();
+                vehicleMovement.StartCoroutine(vehicleMovement.LoopMovePoints());
+            }
         }
 
         
@@ -228,6 +239,7 @@ public class InputManager : MonoBehaviour
         {
             if (secondPoint != Vector3.zero)
             {
+                Debug.Log("second preview cancel");
                 secondPoint = Vector3.zero;
                 secondAnchor = null;
                 secondSelectedGameObject = null;
@@ -240,6 +252,7 @@ public class InputManager : MonoBehaviour
             }
             else if (firstPoint != Vector3.zero)
             {
+                Debug.Log("first preview cancel");
                 firstPoint = Vector3.zero;
                 firstAnchor = null;
                 firstSelectedGameObject = null;
@@ -252,6 +265,63 @@ public class InputManager : MonoBehaviour
             }
         }
 
+    }
+
+    private void GetInputForPreviewBuilding()
+    {
+        if (Input.GetButtonDown("A"))
+        {
+            if (firstPoint == Vector3.zero)
+            {
+                if (pointedGameObject.CompareTag("Road"))
+                {
+                    Debug.Log("first road");
+                    firstPoint = pointedPosition;
+                    firstSelectedGameObject = pointedGameObject;
+                    firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
+                }
+                else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
+                {
+                    Debug.Log("first intersection");
+                    firstPoint = pointedPosition;
+                    firstSelectedGameObject = pointedGameObject;
+                    firstAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Preview);
+                }
+                else
+                {
+                    Debug.Log("Do nothing");
+                }
+            }
+            else if (secondPoint == Vector3.zero)
+            {
+                if (pointedGameObject.CompareTag("Road"))
+                {
+                    Debug.Log("second road");
+                    secondPoint = pointedPosition;
+                    secondSelectedGameObject = pointedGameObject;
+                    secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
+                }
+                else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
+                {
+                    Debug.Log("second intersection");
+                    secondPoint = pointedPosition;
+                    secondSelectedGameObject = pointedGameObject;
+                    secondAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Preview);
+                }
+                else
+                {
+                    Debug.Log("Do nothing");
+                }
+            }
+            // do connection
+            if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
+            {
+                Debug.Log("Connect");
+                roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
+                confirm = true;
+            }
+
+        }
     }
 
     public void ResetRoadBuilding()

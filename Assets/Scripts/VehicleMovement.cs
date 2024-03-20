@@ -1,5 +1,6 @@
 using Barmetler;
 using Barmetler.RoadSystem;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,7 +12,6 @@ public class VehicleMovement : MonoBehaviour
     private RoadSystemNavigator navigator;
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
-    public bool finalGoal = false;
     public bool movePointReady = false;
 
     [Header("Vehicle Attribute")]
@@ -38,14 +38,12 @@ public class VehicleMovement : MonoBehaviour
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         desiredSpeed = Random.Range(25, 35);
         SetRandomGoal();
-        SetMovePoints();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (!movePointReady)
-            SetMovePoints();
+        SetMovePoints();
         DynamicSpeed();
     }
 
@@ -60,13 +58,10 @@ public class VehicleMovement : MonoBehaviour
     {
         if (currentPoint < movePoints.Count)
         {
-            Debug.Log(currentPoint + " " + movePoints.Count);
+            //Debug.Log(currentPoint + " " + movePoints.Count);
             Vector3 forwardDirection;
             if (currentPoint == movePoints.Count - 1)
-            {
                 forwardDirection = (goalObject.gameObject.transform.position - movePoints[currentPoint].position).normalized;
-                //finalGoal = true;
-            }
             else
                 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
             Vector3 target = movePoints[currentPoint].position + Vector3.Cross(Vector3.up, forwardDirection).normalized * -1.5f;
@@ -181,24 +176,37 @@ public class VehicleMovement : MonoBehaviour
 
     public void SetMovePoints()
     {
-        if (!finalGoal)
+        if (movePointReady == true)
         {
-            movePoints = new List<Bezier.OrientedPoint>(navigator.CurrentPoints);
-            Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
-            movePoints.Add(goal);
-        }
-        else
-        {
-            movePoints.Clear();
-            Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
-            movePoints.Add(goal);
+            return;
         }
 
-        if (movePoints.Count > 1)
+        movePoints = new List<Bezier.OrientedPoint>(navigator.CurrentPoints);
+        Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
+        movePoints.Add(goal);
+
+        if (movePoints.Count > 2)
         {
             movePointReady = true;
         }
 
+    }
+
+    public IEnumerator LoopMovePoints()
+    {
+        movePointReady = false;
+        yield return new WaitForSeconds(0.5f);
+        movePointReady = false;
+        yield return new WaitForSeconds(0.5f);
+        movePointReady = false;
+        yield return new WaitForSeconds(0.5f);
+        movePointReady = false;
+        yield return new WaitForSeconds(0.5f);
+        movePointReady = false;
+        yield return new WaitForSeconds(0.5f);
+        movePointReady = false;
+        yield return new WaitForSeconds(0.5f);
+        movePointReady = false;
     }
 
     public void SetRandomGoal()
@@ -214,5 +222,19 @@ public class VehicleMovement : MonoBehaviour
             goalObject = goalObjects[randomIndex];
         }
         navigator.Goal = goalObject.transform.position;
+    }
+
+    public void RecalculatePath()
+    {
+        navigator.CalculateWayPointsSync();
+        movePointReady = false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        for (int i = 0; i < movePoints.Count - 1; i++)
+        {
+            Debug.DrawLine(movePoints[i].position, movePoints[i + 1].position, Color.blue);
+        }
     }
 }

@@ -11,6 +11,7 @@ public class RoadBuildingManager : MonoBehaviour
     public RoadSystem previewRoadSystem;
     public GameObject RoadPrefab;
     public GameObject Intersection3Prefab;
+    public GameObject Intersection4Prefab;
     public List<Road> roadList = new List<Road>();
     public List<Road> previewRoadList = new List<Road>();
 
@@ -119,9 +120,65 @@ public class RoadBuildingManager : MonoBehaviour
         return GetRoadAnchorWithoutConnection(roadAnchors);
     }
 
+    public RoadAnchor CreatePreviewIntersection(GameObject roadSystem, GameObject intersectionGameObject, Vector3 position, BuildMode buildMode)
+    {
+        // get details of clicked intersection
+        Quaternion rotation = intersectionGameObject.transform.rotation;
+        
+
+        // create intersection
+        GameObject intersection;
+        if (buildMode == BuildMode.Preview)
+        {
+            intersection = CreateObjectAtPosition(roadSystem, Intersection4Prefab, position, rotation);
+            RoadAnchor[] previewRoadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
+
+            RoadAnchor[] roadAnchors = intersectionGameObject.GetComponentsInChildren<RoadAnchor>();
+            foreach (RoadAnchor roadAnchor in roadAnchors)
+            {
+                if (roadAnchor.GetConnectedRoad() != null)
+                {
+                    Road road = roadAnchor.GetConnectedRoad();
+                    RoadAnchor roadAnchor1 = road.start;
+                    RoadAnchor roadAnchor2 = road.end;
+                    GameObject roadObject, anotherIntersection;
+                    Road newRoad;
+                    if (roadAnchor == roadAnchor1)
+                    {
+                        anotherIntersection = CreateObjectAtPosition(roadSystem, roadAnchor2.transform.parent.gameObject, roadAnchor2.transform.position, roadAnchor2.transform.rotation);
+                        RoadAnchor[] anotherRoadAnchors = anotherIntersection.GetComponentsInChildren<RoadAnchor>();
+                        roadObject = CreateObjectAtPosition(roadSystem, RoadPrefab, roadAnchor2.transform.position, Quaternion.identity);
+                        newRoad = roadObject.GetComponent<Road>();
+                        newRoad.start = GetClosetRoadAnchor(anotherRoadAnchors, roadObject);
+                        newRoad.end = GetClosetRoadAnchor(previewRoadAnchors, roadAnchor.gameObject);
+                        
+                    }
+                    else
+                    {
+                        anotherIntersection = CreateObjectAtPosition(roadSystem, roadAnchor1.transform.parent.gameObject, roadAnchor1.transform.position, roadAnchor1.transform.rotation);
+                        RoadAnchor[] anotherRoadAnchors = anotherIntersection.GetComponentsInChildren<RoadAnchor>();
+                        roadObject = CreateObjectAtPosition(roadSystem, RoadPrefab, roadAnchor1.transform.position, Quaternion.identity);
+                        newRoad = roadObject.GetComponent<Road>();
+                        newRoad.start = GetClosetRoadAnchor(anotherRoadAnchors, roadObject);
+                        newRoad.end = GetClosetRoadAnchor(previewRoadAnchors, roadAnchor.gameObject);
+                    }
+                    newRoad.Clear();
+                    newRoad.RefreshEndPoints();
+                    previewRoadList.Add(roadObject.GetComponent<Road>());
+
+                }
+            }
+            return GetRoadAnchorWithoutConnection(previewRoadAnchors);
+        }
+        else
+        {
+            return null;
+        }
+
+    }
     public void ConnectTwoIntersections(GameObject roadSystem, RoadAnchor firstRoadAnchor, RoadAnchor secondRoadAnchor, BuildMode buildMode)
     {
-        ValidateRotation(firstRoadAnchor, secondRoadAnchor);
+        //ValidateRotation(firstRoadAnchor, secondRoadAnchor);
         GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, RoadPrefab, firstRoadAnchor.transform.parent.position, Quaternion.identity);
         Road bet_intersection_roadGO_road = bet_intersection_roadGO.GetComponent<Road>();
         LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
@@ -201,9 +258,25 @@ public class RoadBuildingManager : MonoBehaviour
         return createdObject;
     }
 
-    public RoadAnchor GetClosetRoadAnchor(RoadAnchor[] roadAnchors, GameObject interection)
+    public RoadAnchor GetClosetRoadAnchor(RoadAnchor[] roadAnchors, GameObject gameObject)
     {
-        Vector3 position = interection.transform.position;
+        Vector3 position = gameObject.transform.position;
+        RoadAnchor selected = roadAnchors[0];
+        float closedDistance = Vector3.Distance(roadAnchors[0].transform.position, position);
+        for (int i = 1; i < roadAnchors.Length; i++)
+        {
+            float distance = Vector3.Distance(roadAnchors[i].transform.position, position);
+            if (distance < closedDistance)
+            {
+                selected = roadAnchors[i];
+                closedDistance = distance;
+            }
+        }
+        return selected;
+    }
+
+    public RoadAnchor GetClosetRoadAnchorFromPosition(RoadAnchor[] roadAnchors, Vector3 position)
+    {
         RoadAnchor selected = roadAnchors[0];
         float closedDistance = Vector3.Distance(roadAnchors[0].transform.position, position);
         for (int i = 1; i < roadAnchors.Length; i++)
