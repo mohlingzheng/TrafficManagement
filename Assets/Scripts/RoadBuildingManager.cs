@@ -124,16 +124,16 @@ public class RoadBuildingManager : MonoBehaviour
     {
         // get details of clicked intersection
         Quaternion rotation = intersectionGameObject.transform.rotation;
-        
+        RoadAnchor[] roadAnchors = intersectionGameObject.GetComponentsInChildren<RoadAnchor>();
 
         // create intersection
         GameObject intersection;
+        intersection = CreateObjectAtPosition(roadSystem, Intersection4Prefab, position, rotation);
+        RoadAnchor[] previewRoadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
+
+        // for preview, build the connected roads and intersections
         if (buildMode == BuildMode.Preview)
         {
-            intersection = CreateObjectAtPosition(roadSystem, Intersection4Prefab, position, rotation);
-            RoadAnchor[] previewRoadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
-
-            RoadAnchor[] roadAnchors = intersectionGameObject.GetComponentsInChildren<RoadAnchor>();
             foreach (RoadAnchor roadAnchor in roadAnchors)
             {
                 if (roadAnchor.GetConnectedRoad() != null)
@@ -164,21 +164,39 @@ public class RoadBuildingManager : MonoBehaviour
                     }
                     newRoad.Clear();
                     newRoad.RefreshEndPoints();
-                    previewRoadList.Add(roadObject.GetComponent<Road>());
-
+                    previewRoadList.Add(newRoad);
                 }
             }
-            return GetRoadAnchorWithoutConnection(previewRoadAnchors);
         }
+        // for actual, disconnect road from intersection3 and connect to new intersection
         else
         {
-            return null;
+            foreach (var roadAnchor in roadAnchors)
+            {
+                if (roadAnchor.GetConnectedRoad() != null)
+                {
+                    Debug.Log("dis");
+                    Road road = roadAnchor.GetConnectedRoad();
+                    roadAnchor.Disconnect();
+                    RoadAnchor anchor = GetClosetRoadAnchorFromPosition(previewRoadAnchors, roadAnchor.transform.position);
+                    anchor.SetRoad(road);
+                    road.Clear();
+                    road.RefreshEndPoints();
+                    previewRoadList.Add(road);
+                }
+            }
+            Destroy(intersectionGameObject);
         }
+
+        count++;
+        Mathf.Clamp(count, minCount, maxCount);
+
+        return GetRoadAnchorWithoutConnection(previewRoadAnchors);
 
     }
     public void ConnectTwoIntersections(GameObject roadSystem, RoadAnchor firstRoadAnchor, RoadAnchor secondRoadAnchor, BuildMode buildMode)
     {
-        //ValidateRotation(firstRoadAnchor, secondRoadAnchor);
+        ValidateRotation(firstRoadAnchor, secondRoadAnchor);
         GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, RoadPrefab, firstRoadAnchor.transform.parent.position, Quaternion.identity);
         Road bet_intersection_roadGO_road = bet_intersection_roadGO.GetComponent<Road>();
         LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
@@ -196,17 +214,26 @@ public class RoadBuildingManager : MonoBehaviour
     public void ValidateRotation(RoadAnchor firstRoadAnchor, RoadAnchor secondRoadAnchor)
     {
         Vector3 direction = (secondRoadAnchor.transform.position - firstRoadAnchor.transform.position).normalized;
-        Quaternion rotation = Quaternion.LookRotation(direction);
-        float angle = Quaternion.Angle(rotation, firstRoadAnchor.transform.rotation);
-        firstRoadAnchor.transform.parent.localRotation = rotation;
-        if (angle > 90f)
-            ExchangeRoadConnected(firstRoadAnchor);
+        Quaternion rotation;
+        float angle;
 
-        rotation = Quaternion.LookRotation(-direction);
-        angle = Quaternion.Angle(rotation, secondRoadAnchor.transform.rotation);
-        secondRoadAnchor.transform.parent.localRotation = rotation;
-        if (angle > 90f)
-            ExchangeRoadConnected(secondRoadAnchor);
+        if (!firstRoadAnchor.transform.parent.CompareTag("Intersection4"))
+        {
+            rotation = Quaternion.LookRotation(direction);
+            angle = Quaternion.Angle(rotation, firstRoadAnchor.transform.rotation);
+            firstRoadAnchor.transform.parent.localRotation = rotation;
+            if (angle > 90f)
+                ExchangeRoadConnected(firstRoadAnchor);
+        }
+
+        if (!secondRoadAnchor.transform.parent.CompareTag("Intersection4"))
+        {
+            rotation = Quaternion.LookRotation(-direction);
+            angle = Quaternion.Angle(rotation, secondRoadAnchor.transform.rotation);
+            secondRoadAnchor.transform.parent.localRotation = rotation;
+            if (angle > 90f)
+                ExchangeRoadConnected(secondRoadAnchor);
+        }
     }
 
     public void ExchangeRoadConnected(RoadAnchor originalRoadAnchor)
@@ -255,6 +282,10 @@ public class RoadBuildingManager : MonoBehaviour
         createdObject = Instantiate(ObjectPrefab, roadSystem.transform);
         createdObject.transform.localPosition = position;
         createdObject.transform.localRotation = rotation;
+        if (roadSystem == this.previewRoadSystem)
+        {
+            createdObject.name = count.ToString();
+        }
         return createdObject;
     }
 

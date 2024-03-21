@@ -19,11 +19,13 @@ public class InputManager : MonoBehaviour
     public RoadSystem roadSystem;
     public RoadSystem previewRoadSystem;
     public PreviewManager previewSystem;
+    public IntersectionManager intersectionManager;
 
     [Header("Input Mode")]
     public InputMode inputMode = InputMode.Build;
 
     [Header("Canvas")]
+    public GameObject roadBuildingPanel;
     public GameObject buttonPanel;
 
     [Header("Raycast")]
@@ -178,6 +180,12 @@ public class InputManager : MonoBehaviour
                 outline.OutlineColor = new Color(91, 250, 98);
                 outline.OutlineWidth = 2;
                 highlight = null;
+
+                if (selection.CompareTag("Vehicle"))
+                {
+                    VehicleMovement vehicleMovement = selection.GetComponent<VehicleMovement>();
+                    vehicleMovement.isSelected = true;
+                }
             }
         }
 
@@ -185,6 +193,12 @@ public class InputManager : MonoBehaviour
         {
             if (selection != null)
             {
+                if (selection.CompareTag("Vehicle"))
+                {
+                    VehicleMovement vehicleMovement = selection.GetComponent<VehicleMovement>();
+                    vehicleMovement.isSelected = false;
+                }
+
                 selection.gameObject.GetComponent<Outline>().enabled = false;
                 selection = null;
             }
@@ -269,7 +283,7 @@ public class InputManager : MonoBehaviour
 
     private void GetInputForPreviewBuilding()
     {
-        if (Input.GetButtonDown("A"))
+        if (Input.GetButtonDown("A") && confirm == false)
         {
             if (firstPoint == Vector3.zero)
             {
@@ -279,6 +293,7 @@ public class InputManager : MonoBehaviour
                     firstPoint = pointedPosition;
                     firstSelectedGameObject = pointedGameObject;
                     firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(1);
                 }
                 else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
                 {
@@ -286,6 +301,7 @@ public class InputManager : MonoBehaviour
                     firstPoint = pointedPosition;
                     firstSelectedGameObject = pointedGameObject;
                     firstAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(1);
                 }
                 else
                 {
@@ -300,6 +316,7 @@ public class InputManager : MonoBehaviour
                     secondPoint = pointedPosition;
                     secondSelectedGameObject = pointedGameObject;
                     secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(2);
                 }
                 else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
                 {
@@ -307,6 +324,7 @@ public class InputManager : MonoBehaviour
                     secondPoint = pointedPosition;
                     secondSelectedGameObject = pointedGameObject;
                     secondAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(2);
                 }
                 else
                 {
@@ -321,6 +339,97 @@ public class InputManager : MonoBehaviour
                 confirm = true;
             }
 
+        }
+        else if (Input.GetButtonDown("A") && confirm)
+        {
+            Debug.Log("implement build");
+            if (firstSelectedGameObject.CompareTag("Road"))
+                firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
+            else 
+                firstAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, firstSelectedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Actual);
+            
+            if (secondSelectedGameObject.CompareTag("Road"))
+                secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
+            else
+                secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
+
+            roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
+            ResetRoadBuilding();
+            previewSystem.DestroyAllChild();
+            intersectionManager.GetLatestIntersection();
+            GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
+            foreach (GameObject vehicle in vehicles)
+            {
+                VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();
+                vehicleMovement.RecalculatePath();
+                vehicleMovement.StartCoroutine(vehicleMovement.LoopMovePoints());
+            }
+            SetUIOnRoadPreview(5);
+        }
+        else if (Input.GetButtonDown("B"))
+        {
+            if (secondPoint != Vector3.zero)
+            {
+                Debug.Log("second preview cancel");
+                secondPoint = Vector3.zero;
+                secondAnchor = null;
+                secondSelectedGameObject = null;
+                foreach (Transform child in previewRoadSystem.transform)
+                {
+                    if (child.name == "2")
+                        Destroy(child.gameObject);
+                }
+                roadBuildingManager.ReduceCount();
+                SetUIOnRoadPreview(4);
+                confirm = false;
+            }
+            else if (firstPoint != Vector3.zero)
+            {
+                Debug.Log("first preview cancel");
+                firstPoint = Vector3.zero;
+                firstAnchor = null;
+                firstSelectedGameObject = null;
+                foreach (Transform child in previewRoadSystem.transform)
+                {
+                    if (child.name == "1")
+                        Destroy(child.gameObject);
+                }
+                roadBuildingManager.ReduceCount();
+                SetUIOnRoadPreview(3);
+            }
+        }
+    }
+
+    public void SetUIOnRoadPreview(int num)
+    {
+        TextMeshProUGUI[] texts = roadBuildingPanel.GetComponentsInChildren<TextMeshProUGUI>();
+        Debug.Log(texts.Length);
+        foreach (TextMeshProUGUI text in texts)
+        {
+            if (num == 1 && text.gameObject.name == "Text First")
+            {
+                text.text = "First Road built";
+            }
+            if (num == 2 && text.gameObject.name == "Text Second")
+            {
+                text.text = "Second Road built";
+            }
+            if (num == 3 && text.gameObject.name == "Text First")
+            {
+                text.text = "First Build";
+            }
+            if (num == 4 && text.gameObject.name == "Text Second")
+            {
+                text.text = "Second Built";
+            }
+            if (num == 5 && text.gameObject.name == "Text First")
+            {
+                text.text = "First Built";
+            }
+            if (num == 5 && text.gameObject.name == "Text Second")
+            {
+                text.text = "Second Built";
+            }
         }
     }
 

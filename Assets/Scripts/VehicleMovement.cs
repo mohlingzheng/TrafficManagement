@@ -14,6 +14,9 @@ public class VehicleMovement : MonoBehaviour
     public VehicleGeneration vehicleGeneration;
     public bool movePointReady = false;
 
+    [Header("Pathfinding")]
+    public bool isSelected = false;
+
     [Header("Vehicle Attribute")]
     private float arriveThreshold = 5f;
     public float currentSpeed = 0f;
@@ -232,9 +235,12 @@ public class VehicleMovement : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        for (int i = 0; i < movePoints.Count - 1; i++)
+        if (isSelected)
         {
-            Debug.DrawLine(movePoints[i].position, movePoints[i + 1].position, Color.blue);
+            for (int i = 0; i < movePoints.Count - 1; i++)
+            {
+                Debug.DrawLine(movePoints[i].position, movePoints[i + 1].position, Color.blue);
+            }
         }
     }
 }

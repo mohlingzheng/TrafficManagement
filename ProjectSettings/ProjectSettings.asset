@@ -676,11 +676,11 @@ PlayerSettings:
   m_MobileRenderingPath: 1
   metroPackageName: TrafficManagement
   metroPackageVersion: 1.0.0.0
-  metroCertificatePath: 
+  metroCertificatePath: Assets/WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: 
-  metroCertificateIssuer: 
-  metroCertificateNotAfter: 0000000000000000
+  metroCertificateSubject: DefaultCompany
+  metroCertificateIssuer: DefaultCompany
+  metroCertificateNotAfter: 807056ae609adb01
   metroApplicationDescription: TrafficManagement
   wsaImages: {}
   metroTileShortName: TrafficManagement

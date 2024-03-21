@@ -13,8 +13,7 @@ public class IntersectionManager : MonoBehaviour
 
     void Start()
     {
-        intersection3 = GameObject.FindGameObjectsWithTag("Intersection3");
-        intersection4 = GameObject.FindGameObjectsWithTag("Intersection4");
+        GetLatestIntersection();
         StartCoroutine(MoveAndStart());
     }
 
@@ -23,10 +22,18 @@ public class IntersectionManager : MonoBehaviour
         GenerateTrafficLightBlock();
     }
 
+    public void GetLatestIntersection()
+    {
+        intersection3 = GameObject.FindGameObjectsWithTag("Intersection3");
+        intersection4 = GameObject.FindGameObjectsWithTag("Intersection4");
+    }
+
     private void GenerateTrafficLightBlock()
     {
         foreach (var intersection in intersection4)
         {
+            if (intersection == null)
+                continue;
             RoadAnchor[] roadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
             foreach (var roadAnchor in roadAnchors)
             {
@@ -55,6 +62,8 @@ public class IntersectionManager : MonoBehaviour
 
         foreach (var intersection in intersection3)
         {
+            if (intersection == null)
+                continue;
             RoadAnchor[] roadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
             foreach (var roadAnchor in roadAnchors)
             {
