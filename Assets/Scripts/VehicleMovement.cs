@@ -41,12 +41,13 @@ public class VehicleMovement : MonoBehaviour
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         desiredSpeed = Random.Range(25, 35);
         SetRandomGoal();
+        StartCoroutine(SetMovePointLoop());
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        SetMovePoints();
+        //SetMovePoints();
         DynamicSpeed();
     }
 
@@ -197,6 +198,7 @@ public class VehicleMovement : MonoBehaviour
 
     public IEnumerator LoopMovePoints()
     {
+        navigator.enabled = true;
         movePointReady = false;
         yield return new WaitForSeconds(0.5f);
         movePointReady = false;
@@ -210,6 +212,28 @@ public class VehicleMovement : MonoBehaviour
         movePointReady = false;
         yield return new WaitForSeconds(0.5f);
         movePointReady = false;
+        navigator.enabled = false;
+    }
+
+    public IEnumerator SetMovePointLoop()
+    {
+        bool movePointReady = false;
+        while (movePointReady == false)
+        {
+            navigator.enabled = true;
+            navigator.CalculateWayPointsSync();
+            movePoints = new List<Bezier.OrientedPoint>(navigator.CurrentPoints);
+            Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
+            movePoints.Add(goal);
+            navigator.enabled = false;
+            if (movePoints.Count > 2)
+            {
+                movePointReady = true;
+            }
+            yield return new WaitForSeconds(0.5f);
+        }
+
+
     }
 
     public void SetRandomGoal()

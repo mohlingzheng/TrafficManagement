@@ -205,82 +205,6 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void GetBuildingRoadPositionsForPreview()
-    {
-        if (Input.GetButtonDown("A") && pointedGameObject.CompareTag("Road"))
-        {
-            if (firstPoint == Vector3.zero)
-            {
-                Debug.Log("first preview");
-                firstPoint = pointedPosition;
-                firstSelectedGameObject = pointedGameObject;
-                firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
-            }
-            else
-            {
-                Debug.Log("second preview");
-                secondPoint = pointedPosition;
-                secondSelectedGameObject = pointedGameObject;
-                secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
-            }
-            if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
-            {
-                Debug.Log("connect preview");
-                roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
-                confirm = true;
-            }
-        }
-        else if (Input.GetButtonDown("A") && confirm)
-        {
-            Debug.Log("implement build");
-            firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
-            secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
-            roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
-            ResetRoadBuilding();
-            previewSystem.DestroyAllChild();
-            GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
-            foreach (GameObject vehicle in vehicles)
-            {
-                VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();
-                vehicleMovement.RecalculatePath();
-                vehicleMovement.StartCoroutine(vehicleMovement.LoopMovePoints());
-            }
-        }
-
-        
-
-        if (Input.GetButtonDown("B"))
-        {
-            if (secondPoint != Vector3.zero)
-            {
-                Debug.Log("second preview cancel");
-                secondPoint = Vector3.zero;
-                secondAnchor = null;
-                secondSelectedGameObject = null;
-                foreach (Transform child in previewRoadSystem.transform)
-                {
-                    if (child.name == "2")
-                        Destroy(child.gameObject);
-                }
-                roadBuildingManager.ReduceCount();
-            }
-            else if (firstPoint != Vector3.zero)
-            {
-                Debug.Log("first preview cancel");
-                firstPoint = Vector3.zero;
-                firstAnchor = null;
-                firstSelectedGameObject = null;
-                foreach (Transform child in previewRoadSystem.transform)
-                {
-                    if (child.name == "1")
-                        Destroy(child.gameObject);
-                }
-                roadBuildingManager.ReduceCount();
-            }
-        }
-
-    }
-
     private void GetInputForPreviewBuilding()
     {
         if (Input.GetButtonDown("A") && confirm == false)
@@ -361,8 +285,7 @@ public class InputManager : MonoBehaviour
             foreach (GameObject vehicle in vehicles)
             {
                 VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();
-                vehicleMovement.RecalculatePath();
-                vehicleMovement.StartCoroutine(vehicleMovement.LoopMovePoints());
+                StartCoroutine(vehicleMovement.SetMovePointLoop());
             }
             SetUIOnRoadPreview(5);
         }
