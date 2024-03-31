@@ -9,6 +9,7 @@ TagManager:
   - Intersection3
   - Intersection4
   - Road
+  - Queue
   layers:
   - Default
   - TransparentFX

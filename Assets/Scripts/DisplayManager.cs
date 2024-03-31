@@ -10,6 +10,7 @@ public class DisplayManager : MonoBehaviour
     public GameObject detailsPanel;
     public TextMeshProUGUI name;
     public TextMeshProUGUI objectType;
+    public TextMeshProUGUI detail;
     
     void Start()
     {

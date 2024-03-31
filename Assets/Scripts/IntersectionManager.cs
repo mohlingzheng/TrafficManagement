@@ -9,6 +9,7 @@ public class IntersectionManager : MonoBehaviour
     string[] currentState = { };
     string[] NorthSouth = { "Anchor North", "Anchor South" };
     string[] EastWest = { "Anchor East", "Anchor West" };
+    string[] Empty = { };
     public GameObject TrafficLightBlockGameObject;
 
     void Start()
@@ -77,7 +78,11 @@ public class IntersectionManager : MonoBehaviour
                 {
                     block.transform.SetPositionAndRotation(GetRayPositionFromRoadAnchor(roadAnchor), roadAnchor.transform.rotation);
                 }
-                if (IsStringInsideArray(currentState, roadAnchor.name))
+                if (roadAnchor.name == "Anchor West")
+                {
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
+                }
+                else if (IsStringInsideArray(currentState, roadAnchor.name))
                 {
                     block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
@@ -95,9 +100,13 @@ public class IntersectionManager : MonoBehaviour
         while (true)
         {
             currentState = NorthSouth;
+            yield return new WaitForSeconds(6f);
+
+            currentState = Empty;
             yield return new WaitForSeconds(3f);
+
             currentState = EastWest;
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(6f);
         }
     }
 
@@ -106,6 +115,7 @@ public class IntersectionManager : MonoBehaviour
         Vector3 position = roadAnchor.transform.position;
         position = position + roadAnchor.transform.rotation * Vector3.right * 2.2f;
         position.y += 1f;
+        position = position - roadAnchor.transform.forward * 2.5f;
         return position;
     }
 

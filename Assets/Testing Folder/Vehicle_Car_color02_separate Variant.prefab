@@ -13,12 +13,28 @@ PrefabInstance:
       value: Vehicle_Car_color02_separate Variant
       objectReference: {fileID: 0}
     - target: {fileID: 100010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 100010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_TagString
       value: Vehicle
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 311.5
+      value: 400.9
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.y
@@ -26,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 576.7
+      value: 546.8
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalRotation.w
@@ -107,13 +123,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dccac749eaff0da43927b45a11678532, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 0
   goalObject: {fileID: 0}
   vehicleGeneration: {fileID: 0}
-  acceleration: 10
-  maximumVelocity: 30
+  movePointReady: 0
+  isSelected: 0
   currentSpeed: 0
+  desiredSpeed: 0
   rotationSpeed: 10
+  movingDirection: {x: 0, y: 0, z: 0}
+  currentAcceleration: 5
+  nextObjectSpeed: 0
+  relativeSpeed: 0
+  rayDistance: 10
+  rayHitObject: {fileID: 0}
+  distanceDetect: 0
+  distanceBetween: 0
+  dotProduct: 0
+  special: 0
+  CountDistance: 0
+  Count: 0
 --- !u!65 &2887095288479044207
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -133,8 +161,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.704193, y: 2.0394661, z: 6.560608}
-  m_Center: {x: 0.07206726, y: 1.2659403, z: 0.04006958}
+  m_Size: {x: 2.9231262, y: 2.0394661, z: 7.1390133}
+  m_Center: {x: 0.04890442, y: 1.2659405, z: -0.019719303}
 --- !u!54 &2069929635904593215
 Rigidbody:
   m_ObjectHideFlags: 0

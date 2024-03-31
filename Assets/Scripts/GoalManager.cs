@@ -1,19 +1,58 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.UI;
+using System;
 
 public class GoalManager : MonoBehaviour
 {
-    // Start is called before the first frame update
+
+    public GameObject test;
+    public GameObject road;
+    public Collider testCollider;
+    public Collider roadCollider;
+    public GameObject Prefabs;
+    int count = 0;
+
     void Start()
     {
-        
+        RemoveBoxCollider();
+        //testCollider = test.GetComponent<Collider>();
+        //roadCollider = road.GetComponent<Collider>();
     }
 
-    // Update is called once per frame
+    private void RemoveBoxCollider()
+    {
+        GameObject[] buildings = GameObject.FindGameObjectsWithTag("Goal");
+        foreach (GameObject building in buildings)
+        {
+            if (building.GetComponent<Collider>() != null)
+            {
+                building.GetComponent<Collider>().enabled = false;
+            }
+        }
+    }
+
     void Update()
     {
-        
+        //count++;
+        //if (count >= 120)
+        //{
+        //    Test();
+        //    count &= 120;
+        //}
+    }
+
+    void Test()
+    {
+        if (testCollider != null && roadCollider != null)
+        {
+            if (testCollider.bounds.Intersects(roadCollider.bounds))
+            {
+                Debug.Log("collide");
+            }
+        }
     }
 }

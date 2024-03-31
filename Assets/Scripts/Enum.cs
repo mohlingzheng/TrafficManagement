@@ -15,6 +15,8 @@ public enum Tag
     Vehicle = 1,
     Intersection4 = 2,
     Intersection3 = 3,
+    Road = 4,
+    Queue = 5,
 }
 
 public enum InputMode

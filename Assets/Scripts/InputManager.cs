@@ -18,7 +18,6 @@ public class InputManager : MonoBehaviour
     public RoadBuildingManager roadBuildingManager;
     public RoadSystem roadSystem;
     public RoadSystem previewRoadSystem;
-    public PreviewManager previewSystem;
     public IntersectionManager intersectionManager;
 
     [Header("Input Mode")]
@@ -109,16 +108,17 @@ public class InputManager : MonoBehaviour
         if ((int)Input.GetAxis("LeftVertical") != 0)
         {
             vehicleGeneration.carLimit = vehicleGeneration.carLimit + (int)Input.GetAxis("LeftVertical");
-            vehicleGeneration.carLimit = Mathf.Clamp(vehicleGeneration.carLimit, 0, 100);
+            vehicleGeneration.carLimit = Mathf.Clamp(vehicleGeneration.carLimit, 0, 1000);
             developer.GetComponentInChildren<TextMeshProUGUI>().text = vehicleGeneration.carLimit.ToString();
         }
+
     }
 
     public void GetRaycastObjectHit()
     {
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
-        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
+        //Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject())
         {
             OutlineGameObject(hit.transform, hit);
@@ -134,6 +134,10 @@ public class InputManager : MonoBehaviour
         if (highlight != null)
         {
             highlight.gameObject.GetComponent<Outline>().enabled = false;
+            if (highlight.CompareTag("Vehicle"))
+            {
+                highlight.transform.GetComponent<VehicleMovement>().isSelected = false;
+            }
             highlight = null;
         }
 
@@ -155,6 +159,10 @@ public class InputManager : MonoBehaviour
                 //highlight.gameObject.GetComponent<Outline>().OutlineWidth = 7.0f;
             }
             //Debug.Log(highlight.name);
+            if (highlight.CompareTag("Vehicle"))
+            {
+                highlight.transform.GetComponent<VehicleMovement>().isSelected = true;
+            }
         }
         else
         {
@@ -234,7 +242,11 @@ public class InputManager : MonoBehaviour
             }
             else if (secondPoint == Vector3.zero)
             {
-                if (pointedGameObject.CompareTag("Road"))
+                if (pointedGameObject == firstSelectedGameObject)
+                {
+                    Debug.Log("Cannot select same road or same intersection");
+                }
+                else if (pointedGameObject.CompareTag("Road"))
                 {
                     Debug.Log("second road");
                     secondPoint = pointedPosition;
@@ -258,7 +270,7 @@ public class InputManager : MonoBehaviour
             // do connection
             if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
             {
-                Debug.Log("Connect");
+                Debug.Log("Preview Connect");
                 roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
                 confirm = true;
             }
@@ -279,14 +291,9 @@ public class InputManager : MonoBehaviour
 
             roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
             ResetRoadBuilding();
-            previewSystem.DestroyAllChild();
+            DestroyAllPreviewObject();
             intersectionManager.GetLatestIntersection();
-            GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
-            foreach (GameObject vehicle in vehicles)
-            {
-                VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();
-                StartCoroutine(vehicleMovement.SetMovePointLoop());
-            }
+            PathFindingRecalculate();
             SetUIOnRoadPreview(5);
         }
         else if (Input.GetButtonDown("B"))
@@ -314,8 +321,7 @@ public class InputManager : MonoBehaviour
                 firstSelectedGameObject = null;
                 foreach (Transform child in previewRoadSystem.transform)
                 {
-                    if (child.name == "1")
-                        Destroy(child.gameObject);
+                    Destroy(child.gameObject);
                 }
                 roadBuildingManager.ReduceCount();
                 SetUIOnRoadPreview(3);
@@ -326,7 +332,7 @@ public class InputManager : MonoBehaviour
     public void SetUIOnRoadPreview(int num)
     {
         TextMeshProUGUI[] texts = roadBuildingPanel.GetComponentsInChildren<TextMeshProUGUI>();
-        Debug.Log(texts.Length);
+
         foreach (TextMeshProUGUI text in texts)
         {
             if (num == 1 && text.gameObject.name == "Text First")
@@ -371,7 +377,7 @@ public class InputManager : MonoBehaviour
     {
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
-        Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.white);
+        //Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.white);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("Terrain")))
         {
             pointedPosition = hit.point;
@@ -414,5 +420,23 @@ public class InputManager : MonoBehaviour
             ChangeUIWithInputMode();
         }
 
+    }
+
+    private void PathFindingRecalculate()
+    {
+        GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
+        foreach (GameObject vehicle in vehicles)
+        {
+            VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();
+            StartCoroutine(vehicleMovement.SetMovePointLoop());
+        }
+    }
+
+    private void DestroyAllPreviewObject()
+    {
+        foreach (Transform child in previewRoadSystem.transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }

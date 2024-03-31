@@ -1,9 +1,11 @@
 using Barmetler.RoadSystem;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class RoadBuildingManager : MonoBehaviour
 {
@@ -115,7 +117,7 @@ public class RoadBuildingManager : MonoBehaviour
         second_roadGO_road.RefreshEndPoints();
 
         count++;
-        Mathf.Clamp(count, minCount, maxCount);
+        count = Mathf.Clamp(count, minCount, maxCount);
 
         return GetRoadAnchorWithoutConnection(roadAnchors);
     }
@@ -129,7 +131,7 @@ public class RoadBuildingManager : MonoBehaviour
         // create intersection
         GameObject intersection;
         intersection = CreateObjectAtPosition(roadSystem, Intersection4Prefab, position, rotation);
-        RoadAnchor[] previewRoadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
+        RoadAnchor[] newRoadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
 
         // for preview, build the connected roads and intersections
         if (buildMode == BuildMode.Preview)
@@ -150,7 +152,7 @@ public class RoadBuildingManager : MonoBehaviour
                         roadObject = CreateObjectAtPosition(roadSystem, RoadPrefab, roadAnchor2.transform.position, Quaternion.identity);
                         newRoad = roadObject.GetComponent<Road>();
                         newRoad.start = GetClosetRoadAnchor(anotherRoadAnchors, roadObject);
-                        newRoad.end = GetClosetRoadAnchor(previewRoadAnchors, roadAnchor.gameObject);
+                        newRoad.end = GetClosetRoadAnchor(newRoadAnchors, roadAnchor.gameObject);
                         
                     }
                     else
@@ -160,7 +162,7 @@ public class RoadBuildingManager : MonoBehaviour
                         roadObject = CreateObjectAtPosition(roadSystem, RoadPrefab, roadAnchor1.transform.position, Quaternion.identity);
                         newRoad = roadObject.GetComponent<Road>();
                         newRoad.start = GetClosetRoadAnchor(anotherRoadAnchors, roadObject);
-                        newRoad.end = GetClosetRoadAnchor(previewRoadAnchors, roadAnchor.gameObject);
+                        newRoad.end = GetClosetRoadAnchor(newRoadAnchors, roadAnchor.gameObject);
                     }
                     newRoad.Clear();
                     newRoad.RefreshEndPoints();
@@ -175,25 +177,33 @@ public class RoadBuildingManager : MonoBehaviour
             {
                 if (roadAnchor.GetConnectedRoad() != null)
                 {
-                    Debug.Log("dis");
                     Road road = roadAnchor.GetConnectedRoad();
-                    roadAnchor.Disconnect();
-                    RoadAnchor anchor = GetClosetRoadAnchorFromPosition(previewRoadAnchors, roadAnchor.transform.position);
-                    anchor.SetRoad(road);
+                    RoadAnchor anchor = GetClosetRoadAnchorFromPosition(newRoadAnchors, roadAnchor.transform.position);
+                    if (road.start == roadAnchor)
+                    {
+                        roadAnchor.Disconnect();
+                        road.start = anchor;
+                    }
+                    else
+                    {
+                        roadAnchor.Disconnect();
+                        road.end = anchor;
+                    }
                     road.Clear();
                     road.RefreshEndPoints();
-                    previewRoadList.Add(road);
+                    roadList.Add(road);
                 }
             }
             Destroy(intersectionGameObject);
         }
 
         count++;
-        Mathf.Clamp(count, minCount, maxCount);
+        count = Mathf.Clamp(count, minCount, maxCount);
 
-        return GetRoadAnchorWithoutConnection(previewRoadAnchors);
+        return GetRoadAnchorWithoutConnection(newRoadAnchors);
 
     }
+    
     public void ConnectTwoIntersections(GameObject roadSystem, RoadAnchor firstRoadAnchor, RoadAnchor secondRoadAnchor, BuildMode buildMode)
     {
         ValidateRotation(firstRoadAnchor, secondRoadAnchor);
@@ -202,7 +212,7 @@ public class RoadBuildingManager : MonoBehaviour
         LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
         if (buildMode == BuildMode.Preview)
         {
-            bet_intersection_roadGO.name = (count-1).ToString();
+            bet_intersection_roadGO.name = count.ToString();
             previewRoadList.Add(bet_intersection_roadGO_road);
         }
         else
@@ -292,9 +302,9 @@ public class RoadBuildingManager : MonoBehaviour
     public RoadAnchor GetClosetRoadAnchor(RoadAnchor[] roadAnchors, GameObject gameObject)
     {
         Vector3 position = gameObject.transform.position;
-        RoadAnchor selected = roadAnchors[0];
-        float closedDistance = Vector3.Distance(roadAnchors[0].transform.position, position);
-        for (int i = 1; i < roadAnchors.Length; i++)
+        RoadAnchor selected = null;
+        float closedDistance = float.PositiveInfinity;
+        for (int i = 0; i < roadAnchors.Length; i++)
         {
             float distance = Vector3.Distance(roadAnchors[i].transform.position, position);
             if (distance < closedDistance)
@@ -308,9 +318,9 @@ public class RoadBuildingManager : MonoBehaviour
 
     public RoadAnchor GetClosetRoadAnchorFromPosition(RoadAnchor[] roadAnchors, Vector3 position)
     {
-        RoadAnchor selected = roadAnchors[0];
-        float closedDistance = Vector3.Distance(roadAnchors[0].transform.position, position);
-        for (int i = 1; i < roadAnchors.Length; i++)
+        RoadAnchor selected = null;
+        float closedDistance = float.PositiveInfinity;
+        for (int i = 0; i < roadAnchors.Length; i++)
         {
             float distance = Vector3.Distance(roadAnchors[i].transform.position, position);
             if (distance < closedDistance)
@@ -351,13 +361,11 @@ public class RoadBuildingManager : MonoBehaviour
         }
     }
 
-
     public void ReduceCount()
     {
         count--;
-        Mathf.Clamp(count, minCount, maxCount);
+        count = Mathf.Clamp(count, minCount, maxCount);
     }
-
 
     private void MakeTransparent(Transform parent)
     {

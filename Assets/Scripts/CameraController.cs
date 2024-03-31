@@ -19,7 +19,6 @@ public class CameraController : MonoBehaviour
     public Quaternion newRotation;
     public Vector3 newZoom;
 
-    // Start is called before the first frame update
     void Start()
     {
         newPosition = transform.position;
@@ -27,7 +26,6 @@ public class CameraController : MonoBehaviour
         newZoom = cameraTransform.localPosition;
     }
 
-    // Update is called once per frame
     void Update()
     {
         HandleMovementInput();
@@ -40,7 +38,7 @@ public class CameraController : MonoBehaviour
         newPosition += transform.forward * Input.GetAxis("Vertical") * movementSpeed;
         newRotation *= Quaternion.Euler(new Vector3(0f, Input.GetAxis("RightHorizontal"), 0f) * rotationAmount);
         newZoom += -Input.GetAxis("RightVertical") * zoomAmount;
-        
+
         if (Input.GetButtonDown("RS_B"))
         {
             newRotation = Quaternion.Euler(0, 0, 0);
@@ -48,10 +46,28 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    Vector3 ClampZoomVector(Vector3 value)
+    {
+        value.x = Mathf.Clamp(value.x, 0f, value.x);
+        value.y = Mathf.Clamp(value.y, 100f, 1300f);
+        value.z = Mathf.Clamp(value.z, -1300f, -100f);
+        return value;
+    }
+
+    Vector3 ClampPositionVector(Vector3 value)
+    {
+        value.x = Mathf.Clamp(value.x, 0f, 1000f);
+        value.y = Mathf.Clamp(value.y, 5f, 5f);
+        value.z = Mathf.Clamp(value.z, 0f, 1000f);
+        return value;
+    }
+
     void UpdatePositionRotation()
     {
+        newPosition = ClampPositionVector(newPosition);
         transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, newRotation, Time.deltaTime * movementTime);
+        newZoom = ClampZoomVector(newZoom);
         cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, newZoom, Time.deltaTime * movementTime);
     }
 }

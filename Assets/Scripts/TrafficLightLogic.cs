@@ -21,10 +21,31 @@ public class TrafficLightLogic : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (IsSameLight(TrafficLightState.Red))
-            Debug.DrawRay(transform.position, transform.forward, Color.red);
-        else
-            Debug.DrawRay(transform.position,transform.forward, Color.green);
+        if (!transform.parent.parent.CompareTag("Intersection3"))
+        {
+            DisplayTrafficLightColor();
+        }
+
+        AskVehicleToCheck();
+    }
+
+    private void AskVehicleToCheck()
+    {
+        Vector3 raycastPosition = transform.position;
+        float maxDistance = 10f;
+        Ray ray = new Ray(raycastPosition, transform.forward);
+        RaycastHit[] hits = Physics.RaycastAll(ray, maxDistance);
+        Debug.DrawRay(raycastPosition, transform.forward * maxDistance, Color.white);
+        foreach (RaycastHit hit in  hits)
+        {
+            if (hit.collider.gameObject.transform.tag == "Vehicle")
+            {
+                VehicleMovement vehicleMovement = hit.collider.gameObject.GetComponent<VehicleMovement>();
+                //vehicleMovement.special = true;
+                //vehicleMovement.FunctionCalledByTrafficLight(hit, gameObject);
+                //vehicleMovement.special = false;
+            }
+        }
     }
 
     IEnumerator TrafficLightCycle()
@@ -50,5 +71,14 @@ public class TrafficLightLogic : MonoBehaviour
     public void SetCurrentState(TrafficLightState trafficLightState)
     {
         currentState = trafficLightState;
+    }
+
+    public void DisplayTrafficLightColor()
+    {
+        float length = 3f;
+        if (IsSameLight(TrafficLightState.Red))
+            Debug.DrawRay(transform.position, transform.up * length, Color.red);
+        else
+            Debug.DrawRay(transform.position, transform.up * length, Color.green);
     }
 }
