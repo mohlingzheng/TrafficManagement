@@ -25,6 +25,7 @@ public class DisplayManager : MonoBehaviour
 
     void ShowDetailOfSelectedObject()
     {
+        TextMeshProUGUI[] textMeshProUGUIs = detailsPanel.GetComponentsInChildren<TextMeshProUGUI>();
         GameObject gameObject;
         if (inputSystem.selection)
         {
@@ -37,13 +38,33 @@ public class DisplayManager : MonoBehaviour
 
         if (gameObject == null)
         {
-            name.text = "";
-            objectType.text = "";
+            GetSpecificText(textMeshProUGUIs, "Name").text = "";
+            GetSpecificText(textMeshProUGUIs, "ObjectType").text = "";
+            GetSpecificText(textMeshProUGUIs, "Attribute").text = "";
             detailsPanel.SetActive(false);
             return;
         }
         detailsPanel.SetActive(true);
-        name.text = gameObject.name;
-        objectType.text = gameObject.tag;
+        GetSpecificText(textMeshProUGUIs, "Name").text = gameObject.name;
+        GetSpecificText(textMeshProUGUIs, "ObjectType").text = gameObject.tag;
+        if (gameObject.CompareTag("Vehicle"))
+        {
+            GetSpecificText(textMeshProUGUIs, "Attribute").text = gameObject.GetComponent<VehicleMovement>().currentSpeed.ToString();
+        }
+        else
+        {
+            GetSpecificText(textMeshProUGUIs, "Attribute").text = "";
+        }
     }
+
+    private TextMeshProUGUI GetSpecificText(TextMeshProUGUI[] textMeshProUGUIs, string text)
+    {
+        foreach (TextMeshProUGUI textMeshProUGUI in textMeshProUGUIs)
+        {
+            if (textMeshProUGUI.name == text)
+                return textMeshProUGUI;
+        }
+        return null;
+    }
+
 }

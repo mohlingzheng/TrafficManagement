@@ -21,7 +21,7 @@ public class InputManager : MonoBehaviour
     public IntersectionManager intersectionManager;
 
     [Header("Input Mode")]
-    public InputMode inputMode = InputMode.Build;
+    public InputMode inputMode = InputMode.Default;
 
     [Header("Canvas")]
     public GameObject roadBuildingPanel;
@@ -86,20 +86,20 @@ public class InputManager : MonoBehaviour
 
     void ButtonInteraction()
     {
-        // Input.GetAxis or Input.GetButtonDown
-        // For Keyboard: Input.GetKeyDown(KeyCode.)
         HandleInputModeChange();
         GetRaycastPositionHit();
+
         GetRaycastObjectHit();
+
         if (inputMode == InputMode.Default)
         {
             SelecteOutlineObject();
         }
         else if (inputMode == InputMode.Build)
         {
-            //GetBuildingRoadPositionsForPreview();
             GetInputForPreviewBuilding();
         }
+
         DeveloperInteraction();
     }
 
@@ -119,16 +119,53 @@ public class InputManager : MonoBehaviour
         RaycastHit hit;
         Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
         //Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject())
+        if (inputMode == InputMode.Default)
         {
-            OutlineGameObject(hit.transform, hit);
-            pointedGameObject = hit.collider.gameObject;
+            if (Physics.Raycast(ray, out hit) && !EventSystem.current.IsPointerOverGameObject())
+            {
+                float radius = 10f;
+                Collider[] colliders = Physics.OverlapSphere(hit.point, radius);
+                foreach (Collider collider in colliders)
+                {
+                    if (collider.transform.CompareTag("Vehicle"))
+                    {
+                        pointedGameObject = collider.gameObject;
+                        OutlineGameObject(pointedGameObject.transform);
+                        return;
+                    }
+                }
+
+                foreach (Collider collider in colliders)
+                {
+                    if (collider.transform.CompareTag("Road"))
+                    {
+                        pointedGameObject = collider.gameObject;
+                        OutlineGameObject(pointedGameObject.transform);
+                        return;
+                    }
+                }
+
+                if (pointedGameObject == null)
+                {
+                    pointedGameObject = colliders[0].gameObject;
+                    OutlineGameObject(pointedGameObject.transform);
+                    return;
+                }
+            }
         }
         else
-            pointedGameObject = null;
+        {
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity) && !EventSystem.current.IsPointerOverGameObject())
+            {
+                OutlineGameObject(hit.transform);
+                pointedGameObject = hit.collider.gameObject;
+            }
+            else
+                pointedGameObject = null;
+        }
     }
 
-    public void OutlineGameObject(Transform transform, RaycastHit raycastHit)
+    public void OutlineGameObject(Transform transform)
     {
         // if previously highlight some gameobject, disable it and set to null
         if (highlight != null)
@@ -155,10 +192,7 @@ public class InputManager : MonoBehaviour
                 outline.OutlineColor = new Color(91, 250, 98);
                 outline.OutlineWidth = 2;
                 outline.enabled = true;
-                //highlight.gameObject.GetComponent<Outline>().OutlineColor = Color.magenta;
-                //highlight.gameObject.GetComponent<Outline>().OutlineWidth = 7.0f;
             }
-            //Debug.Log(highlight.name);
             if (highlight.CompareTag("Vehicle"))
             {
                 highlight.transform.GetComponent<VehicleMovement>().isSelected = true;
@@ -194,6 +228,8 @@ public class InputManager : MonoBehaviour
                     VehicleMovement vehicleMovement = selection.GetComponent<VehicleMovement>();
                     vehicleMovement.isSelected = true;
                 }
+
+                Debug.Log("Object Selected");
             }
         }
 
@@ -226,6 +262,7 @@ public class InputManager : MonoBehaviour
                     firstSelectedGameObject = pointedGameObject;
                     firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(1);
+                    roadBuildingManager.IncreaseCount();
                 }
                 else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
                 {
@@ -234,6 +271,7 @@ public class InputManager : MonoBehaviour
                     firstSelectedGameObject = pointedGameObject;
                     firstAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(1);
+                    roadBuildingManager.IncreaseCount();
                 }
                 else
                 {
@@ -273,6 +311,7 @@ public class InputManager : MonoBehaviour
                 Debug.Log("Preview Connect");
                 roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
                 confirm = true;
+                roadBuildingManager.IncreaseCount();
             }
 
         }
@@ -396,6 +435,10 @@ public class InputManager : MonoBehaviour
             buttonPanel.transform.GetChild(0).GetComponent<Image>().color = Color.white;
             buttonPanel.transform.GetChild(1).GetComponent<Image>().color = Color.green;
         }
+        else
+        {
+            Debug.Log("Wrong InputMode");
+        }
     }
 
     private void HandleInputModeChange()
@@ -404,8 +447,8 @@ public class InputManager : MonoBehaviour
         int currentMode = (int)inputMode;
         if (Input.GetButtonDown("LB"))
         {
-            currentMode = (currentMode - 1);
-            currentMode = Mathf.Clamp(currentMode, 0, size);
+            currentMode--;
+            currentMode = Mathf.Clamp(currentMode, 0, 1);
             inputMode = (InputMode)currentMode;
             Debug.Log("Change InputMode to " + inputMode);
             ChangeUIWithInputMode();
@@ -413,8 +456,8 @@ public class InputManager : MonoBehaviour
 
         if (Input.GetButtonDown("RB"))
         {
-            currentMode = (currentMode + 1);
-            currentMode = Mathf.Clamp(currentMode, 0, size);
+            currentMode++;
+            currentMode = Mathf.Clamp(currentMode, 0, 1);
             inputMode = (InputMode)currentMode;
             Debug.Log("Change InputMode to " + inputMode);
             ChangeUIWithInputMode();

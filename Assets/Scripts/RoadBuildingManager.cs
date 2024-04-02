@@ -18,8 +18,8 @@ public class RoadBuildingManager : MonoBehaviour
     public List<Road> previewRoadList = new List<Road>();
 
     public Material TransparentMaterial;
-    public static int count = 1;
-    const int maxCount = 2;
+    public int count = 1;
+    const int maxCount = 3;
     const int minCount = 1;
 
 
@@ -116,9 +116,6 @@ public class RoadBuildingManager : MonoBehaviour
         second_roadGO_road.Clear();
         second_roadGO_road.RefreshEndPoints();
 
-        count++;
-        count = Mathf.Clamp(count, minCount, maxCount);
-
         return GetRoadAnchorWithoutConnection(roadAnchors);
     }
 
@@ -196,9 +193,6 @@ public class RoadBuildingManager : MonoBehaviour
             }
             Destroy(intersectionGameObject);
         }
-
-        count++;
-        count = Mathf.Clamp(count, minCount, maxCount);
 
         return GetRoadAnchorWithoutConnection(newRoadAnchors);
 
@@ -361,10 +355,18 @@ public class RoadBuildingManager : MonoBehaviour
         }
     }
 
+    public void IncreaseCount()
+    {
+        count++;
+        count = Mathf.Clamp(count, minCount, maxCount);
+        Debug.Log("++");
+    }
+
     public void ReduceCount()
     {
         count--;
         count = Mathf.Clamp(count, minCount, maxCount);
+        Debug.Log("--");
     }
 
     private void MakeTransparent(Transform parent)

@@ -1,5 +1,6 @@
 using Barmetler.RoadSystem;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class IntersectionManager : MonoBehaviour
@@ -11,6 +12,7 @@ public class IntersectionManager : MonoBehaviour
     string[] EastWest = { "Anchor East", "Anchor West" };
     string[] Empty = { };
     public GameObject TrafficLightBlockGameObject;
+    public GameObject TrafficLightPrefab;
 
     void Start()
     {
@@ -57,6 +59,23 @@ public class IntersectionManager : MonoBehaviour
                 {
                     block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Red);
                 }
+
+                GameObject trafficLight;
+                if (block.transform.childCount <= 0)
+                {
+                    trafficLight = Instantiate(TrafficLightPrefab, block.transform);
+                    Vector3 position = block.transform.localPosition;
+                    position.x -= 1.5f;
+                    position.y -= 1.5f;
+                    trafficLight.transform.localPosition = position;
+                    trafficLight.transform.rotation = block.transform.rotation;
+                }
+                else
+                {
+                    trafficLight = block.transform.GetChild(0).gameObject;
+                }
+                TrafficLightSwitch(trafficLight, block);
+                
 
             }
         }
@@ -129,5 +148,30 @@ public class IntersectionManager : MonoBehaviour
             }
         }
         return false;
+    }
+
+    private void TrafficLightSwitch(GameObject trafficLight, GameObject block)
+    {
+        TrafficLightState state = block.GetComponent<TrafficLightLogic>().currentState;
+        List <GameObject> TrafficLightPoints = new List<GameObject>();
+        for (int i = 0; i < trafficLight.transform.childCount; i++)
+        {
+            if (state == TrafficLightState.Red)
+            {
+                Transform point = trafficLight.transform.GetChild(i);
+                if (point.name == "Red")
+                    point.gameObject.SetActive(true);
+                else
+                    point.gameObject.SetActive(false);
+            }
+            else if (state == TrafficLightState.Green)
+            {
+                Transform point = trafficLight.transform.GetChild(i);
+                if (point.name == "Green")
+                    point.gameObject.SetActive(true);
+                else
+                    point.gameObject.SetActive(false);
+            }
+        }
     }
 }

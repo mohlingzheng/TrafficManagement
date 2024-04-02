@@ -101,7 +101,7 @@ public class VehicleGeneration : MonoBehaviour
         {
             //specificVehicle2 = Instantiate(VehiclePrefab, entryPoints[3], Quaternion.identity);
             specificVehicle2.name = "Specific Vehicle 2";
-            specificVehicle2.GetComponent<VehicleMovement>().desiredSpeed = 10f;
+            specificVehicle2.GetComponent<VehicleMovement>().desiredSpeed = 1f;
         }
         //else
         //{

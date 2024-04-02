@@ -13,6 +13,7 @@ public class VehicleMovement : MonoBehaviour
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
     public bool movePointReady = false;
+    public GameObject SpecificGoal;
 
     [Header("Pathfinding")]
     public bool isSelected = false;
@@ -50,6 +51,8 @@ public class VehicleMovement : MonoBehaviour
         navigator.currentRoadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         desiredSpeed = Random.Range(10, 20);
+        if (transform.name == "Specific Vehicle")
+            desiredSpeed = 10f;
         SetRandomGoal();
         StartCoroutine(SetMovePointLoop());
     }
@@ -589,7 +592,7 @@ public class VehicleMovement : MonoBehaviour
         GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
         if (gameObject.name == "Specific Vehicle 2" || gameObject.name == "Specific Vehicle")
         {
-            goalObject = goalObjects[3];
+            goalObject = GameObject.Find("SpecificGoal");
         }
         else if (goalObjects.Length > 0)
         {
@@ -605,18 +608,6 @@ public class VehicleMovement : MonoBehaviour
         movePointReady = false;
     }
 
-    private void OnDrawGizmos()
-    {
-        if (isSelected)
-        {
-            for (int i = 0; i < movePoints.Count - 1; i++)
-            {
-                Debug.DrawLine(movePoints[i].position, movePoints[i + 1].position, Color.blue);
-                Gizmos.DrawSphere(movePoints[i].position, 1f);
-            }
-        }
-    }
-
     private void RemoveGameObject()
     {
         Vector3 center = new Vector3(500f, 0f, 500f);
@@ -624,99 +615,6 @@ public class VehicleMovement : MonoBehaviour
         if (distance > 800f)
         {
             Destroy(gameObject);
-        }
-    }
-
-    public void FunctionCalledByTrafficLight(RaycastHit hit, GameObject wall)
-    {
-        if (wall.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red) && wall.transform.parent.parent.CompareTag("Intersection4"))
-        {
-            if (wall.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red))
-            {
-                UpdateStopAttribute(hit);
-            }
-            else if (wall.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Green))
-            {
-                if (WantToRight())
-                {
-                    if (CheckIfThereIsCar(GetNextWallGameObject(wall, 2)))
-                    {
-                        UpdateStopAttribute(hit);
-                    }
-                    else
-                    {
-                        UpdateNormalAttribute();
-                    }
-                }
-                else
-                {
-                    UpdateNormalAttribute();
-                }
-            }
-            else
-            {
-                Debug.Log("Intersection4 Wrong Condition");
-            }
-        }
-        else if (wall.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red) && wall.transform.parent.parent.CompareTag("Intersection3"))
-        {
-            if (WantToRight())
-            {
-                if (wall.transform.parent.name == "Anchor East" && false)
-                {
-                    // Check Anchor West
-                    if (CheckIfThereIsCar(GetNextWallGameObject(wall, 1)))
-                    {
-                        UpdateStopAttribute(hit);
-                    }
-                    else
-                    {
-                        UpdateNormalAttribute();
-                    }
-                }
-                else if (wall.transform.parent.name == "Anchor North")
-                {
-                    if (CheckIfThereIsCar(GetNextWallGameObject(wall, 1)))
-                    {
-                        UpdateStopAttribute(hit);
-                    }
-                    else
-                    {
-                        UpdateNormalAttribute();
-                    }
-                }
-            }
-            else if (WantToLeft())
-            {
-                if (wall.transform.parent.name == "Anchor West")
-                {
-                    UpdateNormalAttribute();
-                }
-                else if (wall.transform.parent.name == "Anchor North")
-                {
-                    // Check Anchor West
-                    if (CheckIfThereIsCar(GetNextWallGameObject(wall, 2)))
-                    {
-                        UpdateStopAttribute(hit);
-                    }
-                    else
-                    {
-                        UpdateNormalAttribute();
-                    }
-                }
-            }
-            else
-            {
-                UpdateNormalAttribute();
-            }
-        }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.transform.CompareTag("Vehicle"))
-        {
-            currentSpeed = 0;
         }
     }
 
