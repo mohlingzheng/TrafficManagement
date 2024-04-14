@@ -6,9 +6,12 @@ TagManager:
   tags:
   - Goal
   - Vehicle
-  - Intersection3
-  - Intersection4
-  - Road
+  - Intersection_3_Small
+  - Intersection_4_Small
+  - Intersection_3_Large
+  - Intersection_4_Large
+  - Road_Small
+  - Road_Large
   - Queue
   layers:
   - Default

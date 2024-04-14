@@ -25,7 +25,7 @@ public class GoalManager : MonoBehaviour
 
     private void RemoveBoxCollider()
     {
-        GameObject[] buildings = GameObject.FindGameObjectsWithTag("Goal");
+        GameObject[] buildings = GameObject.FindGameObjectsWithTag(Tag.Goal);
         foreach (GameObject building in buildings)
         {
             if (building.GetComponent<Collider>() != null)

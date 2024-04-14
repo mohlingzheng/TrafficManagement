@@ -17,14 +17,12 @@ public class VehicleGeneration : MonoBehaviour
     GameObject specificVehicle;
     GameObject specificVehicle2;
     public bool GenerateFixVehicle = true;
-    // Start is called before the first frame update
+
     void Start()
     {
         SetEntryPoints();
-        //StartCoroutine(GenerateVehicle());
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         if (GenerateFixVehicle)
@@ -57,21 +55,6 @@ public class VehicleGeneration : MonoBehaviour
         //entryPoints[6] = new Vector3(606f, 0.5f, 1.5f);
 
     }
-
-    //IEnumerator GenerateVehicle()
-    //{
-    //    while (true)
-    //    {
-    //        if (vehicleCount < carLimit)
-    //        {
-    //            int random = Random.Range(0, queuePoints.Length);
-    //            QueueingLogic queueLogic = queuePoints[random].GetComponent<QueueingLogic>();
-    //            queueLogic.queue.Enqueue(VehiclePrefab);
-    //            vehicleCount++;
-    //        }
-    //        //yield return null;
-    //    }
-    //}
 
     public void ReduceVehicleCount(int count)
     {

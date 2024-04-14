@@ -19,7 +19,7 @@ public class GenerateBuilding : MonoBehaviour
     }
     public void GenerateRandomBuilding()
     {
-        Roads = GameObject.FindGameObjectsWithTag("Road");
+        Roads = GameObject.FindGameObjectsWithTag(Tag.Road_Small);
         int random = Random.Range(0, BuildingPrefabs.Length);
         GameObject newBuilding = Instantiate(BuildingPrefabs[random], GoalSystem.transform);
         newBuilding.transform.SetLocalPositionAndRotation(GetPosition(), Quaternion.LookRotation(GetDirection()));

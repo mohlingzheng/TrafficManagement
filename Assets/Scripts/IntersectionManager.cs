@@ -27,8 +27,8 @@ public class IntersectionManager : MonoBehaviour
 
     public void GetLatestIntersection()
     {
-        intersection3 = GameObject.FindGameObjectsWithTag("Intersection3");
-        intersection4 = GameObject.FindGameObjectsWithTag("Intersection4");
+        intersection3 = GameObject.FindGameObjectsWithTag(Tag.Intersection_3_Small);
+        intersection4 = GameObject.FindGameObjectsWithTag(Tag.Intersection_4_Small);
     }
 
     private void GenerateTrafficLightBlock()

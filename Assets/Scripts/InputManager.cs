@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor;
+using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -127,7 +128,7 @@ public class InputManager : MonoBehaviour
                 Collider[] colliders = Physics.OverlapSphere(hit.point, radius);
                 foreach (Collider collider in colliders)
                 {
-                    if (collider.transform.CompareTag("Vehicle"))
+                    if (collider.transform.CompareTag(Tag.Vehicle))
                     {
                         pointedGameObject = collider.gameObject;
                         OutlineGameObject(pointedGameObject.transform);
@@ -137,7 +138,7 @@ public class InputManager : MonoBehaviour
 
                 foreach (Collider collider in colliders)
                 {
-                    if (collider.transform.CompareTag("Road"))
+                    if (Tag.CompareTags(collider.transform, Tag.Road_Small, Tag.Road_Large ))
                     {
                         pointedGameObject = collider.gameObject;
                         OutlineGameObject(pointedGameObject.transform);
@@ -171,7 +172,7 @@ public class InputManager : MonoBehaviour
         if (highlight != null)
         {
             highlight.gameObject.GetComponent<Outline>().enabled = false;
-            if (highlight.CompareTag("Vehicle"))
+            if (highlight.CompareTag(Tag.Vehicle))
             {
                 highlight.transform.GetComponent<VehicleMovement>().isSelected = false;
             }
@@ -193,7 +194,7 @@ public class InputManager : MonoBehaviour
                 outline.OutlineWidth = 2;
                 outline.enabled = true;
             }
-            if (highlight.CompareTag("Vehicle"))
+            if (highlight.CompareTag(Tag.Vehicle))
             {
                 highlight.transform.GetComponent<VehicleMovement>().isSelected = true;
             }
@@ -223,7 +224,7 @@ public class InputManager : MonoBehaviour
                 outline.OutlineWidth = 2;
                 highlight = null;
 
-                if (selection.CompareTag("Vehicle"))
+                if (selection.CompareTag(Tag.Vehicle))
                 {
                     VehicleMovement vehicleMovement = selection.GetComponent<VehicleMovement>();
                     vehicleMovement.isSelected = true;
@@ -237,7 +238,7 @@ public class InputManager : MonoBehaviour
         {
             if (selection != null)
             {
-                if (selection.CompareTag("Vehicle"))
+                if (selection.CompareTag(Tag.Vehicle))
                 {
                     VehicleMovement vehicleMovement = selection.GetComponent<VehicleMovement>();
                     vehicleMovement.isSelected = false;
@@ -255,7 +256,7 @@ public class InputManager : MonoBehaviour
         {
             if (firstPoint == Vector3.zero)
             {
-                if (pointedGameObject.CompareTag("Road"))
+                if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small))
                 {
                     Debug.Log("first road");
                     firstPoint = pointedPosition;
@@ -264,7 +265,7 @@ public class InputManager : MonoBehaviour
                     SetUIOnRoadPreview(1);
                     roadBuildingManager.IncreaseCount();
                 }
-                else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
                 {
                     Debug.Log("first intersection");
                     firstPoint = pointedPosition;
@@ -284,7 +285,7 @@ public class InputManager : MonoBehaviour
                 {
                     Debug.Log("Cannot select same road or same intersection");
                 }
-                else if (pointedGameObject.CompareTag("Road"))
+                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small))
                 {
                     Debug.Log("second road");
                     secondPoint = pointedPosition;
@@ -292,7 +293,7 @@ public class InputManager : MonoBehaviour
                     secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(2);
                 }
-                else if (pointedGameObject.transform.parent.CompareTag("Intersection3"))
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
                 {
                     Debug.Log("second intersection");
                     secondPoint = pointedPosition;
@@ -318,12 +319,12 @@ public class InputManager : MonoBehaviour
         else if (Input.GetButtonDown("A") && confirm)
         {
             Debug.Log("implement build");
-            if (firstSelectedGameObject.CompareTag("Road"))
+            if (Tag.CompareTags(firstSelectedGameObject.transform, Tag.Road_Small))
                 firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
             else 
                 firstAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, firstSelectedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Actual);
-            
-            if (secondSelectedGameObject.CompareTag("Road"))
+
+            if (Tag.CompareTags(secondSelectedGameObject.transform, Tag.Road_Small))
                 secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
             else
                 secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);

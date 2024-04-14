@@ -2,6 +2,8 @@ using Barmetler;
 using Barmetler.RoadSystem;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class VehicleMovement : MonoBehaviour
@@ -13,7 +15,7 @@ public class VehicleMovement : MonoBehaviour
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
     public bool movePointReady = false;
-    public GameObject SpecificGoal;
+    //public GameObject SpecificGoal;
 
     [Header("Pathfinding")]
     public bool isSelected = false;
@@ -44,7 +46,9 @@ public class VehicleMovement : MonoBehaviour
     public float CountDistance = 0f;
     public bool Count = false;
 
-    // Start is called before the first frame update
+    public float distanceFromCentre = -4f;
+    public bool highSpeed;
+
     void Start()
     {
         navigator = GetComponent<RoadSystemNavigator>();
@@ -57,11 +61,156 @@ public class VehicleMovement : MonoBehaviour
         StartCoroutine(SetMovePointLoop());
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         DynamicSpeed();
         RemoveGameObject();
+        if (highSpeed)
+        {
+            distanceFromCentre = OnLanes.GetValue("High");
+        }
+        else {
+            distanceFromCentre = OnLanes.GetValue("Low");
+        }
+        LaneChangingLogic();
+        RemoveMovePointsWith90Degree();
+    }
+
+    void OnDrawGizmos()
+    {
+        for (int i = 1; i < movePoints.Count - 1; i++)
+        {
+            Gizmos.color = UnityEngine.Color.blue;
+            Gizmos.DrawSphere(movePoints[i].position, 1f);
+        }
+    }
+
+    private void LaneChangingLogic()
+    {
+        if (!highSpeed)
+        {
+            RaycastHit? hit = CheckObjectInfront();
+            if (hit.HasValue)
+            {
+                if (Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle))
+                {
+                    float nextCarSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().currentSpeed;
+                    if (desiredSpeed - nextCarSpeed > 3f && CheckLaneFeasible("Right"))
+                    {
+                        highSpeed = true;
+                    }
+                }
+            }
+        }
+        else if (highSpeed)
+        {
+            RaycastHit? hit = CheckObjectInBehind();
+            if (hit.HasValue)
+            {
+                if (Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle))
+                {
+                    float lastCarSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().desiredSpeed;
+                    if (lastCarSpeed - desiredSpeed > 3f && CheckLaneFeasible("Left"))
+                    {
+                        highSpeed = false;
+                    }
+                }
+            }
+        }
+        
+    }
+
+    public bool CheckLaneFeasible(string lane)
+    {
+        if (lane == "Right")
+        {
+            // Get the car's position and rotation
+            Vector3 carPosition = transform.position;
+            Quaternion carRotation = transform.rotation;
+
+            // Calculate the offset vector representing the right direction of the car
+            Vector3 rightOffset = carRotation * Vector3.right * 4f;
+
+            // Calculate the position on the right side of the car
+            Vector3 rightPosition = carPosition + rightOffset;
+
+            // Use rightPosition for whatever purpose you need
+            Debug.DrawLine(carPosition, rightPosition, UnityEngine.Color.red);
+
+            float raycastDistance = 12f;
+
+            float forwardDistance = 10f;
+            float backwardDistance = 10f;
+            RaycastHit hitForward;
+            Debug.DrawRay(rightPosition, transform.forward * raycastDistance, UnityEngine.Color.green);
+
+            if (Physics.Raycast(rightPosition, transform.forward, out hitForward, raycastDistance))
+            {
+                if (hitForward.collider.CompareTag(Tag.Vehicle))
+                    forwardDistance = hitForward.distance;
+            }
+
+            // Cast a ray backward from the right position
+            Debug.DrawRay(rightPosition, -transform.forward * raycastDistance, UnityEngine.Color.blue);
+
+            RaycastHit hitBackward;
+            if (Physics.Raycast(rightPosition, -transform.forward, out hitBackward, raycastDistance))
+            {
+                if (hitBackward.collider.CompareTag(Tag.Vehicle))
+                    backwardDistance = hitBackward.distance;
+            }
+
+            if (forwardDistance + backwardDistance > 10f)
+            {
+                return true;
+            }
+        }   
+        else if (lane == "Left")
+        {
+            // Get the car's position and rotation
+            Vector3 carPosition = transform.position;
+            Quaternion carRotation = transform.rotation;
+
+            // Calculate the offset vector representing the right direction of the car
+            Vector3 rightOffset = carRotation * -Vector3.right * 4f;
+
+            // Calculate the position on the right side of the car
+            Vector3 rightPosition = carPosition + rightOffset;
+
+            // Use rightPosition for whatever purpose you need
+            Debug.DrawLine(carPosition, rightPosition, UnityEngine.Color.red);
+
+            float raycastDistance = 12f;
+
+            float forwardDistance = 10f;
+            float backwardDistance = 10f;
+            RaycastHit hitForward;
+            Debug.DrawRay(rightPosition, transform.forward * raycastDistance, UnityEngine.Color.green);
+
+            if (Physics.Raycast(rightPosition, transform.forward, out hitForward, raycastDistance))
+            {
+                if (hitForward.collider.CompareTag("Vehicle"))
+                    forwardDistance = hitForward.distance;
+            }
+
+            // Cast a ray backward from the right position
+            Debug.DrawRay(rightPosition, -transform.forward * raycastDistance, UnityEngine.Color.blue);
+
+            RaycastHit hitBackward;
+            if (Physics.Raycast(rightPosition, -transform.forward, out hitBackward, raycastDistance))
+            {
+                {
+                    if (hitBackward.collider.CompareTag("Vehicle"))
+                        backwardDistance = hitBackward.distance;
+                }
+            }
+
+            if (forwardDistance + backwardDistance > 10f)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void DynamicSpeed()
@@ -75,33 +224,6 @@ public class VehicleMovement : MonoBehaviour
         MoveWithCurrentSpeed();
     }
 
-    private void DynamicRaycastDistance(RaycastHit? hit)
-    {
-        if (hit.HasValue)
-        {
-            if ((hit.Value.collider.CompareTag("Vehicle") || DoHitHaveLayer(hit.Value, "Invisible")))
-            {
-                if (hit.Value.collider.gameObject == rayHitObject)
-                {
-                    rayDistance = hit.Value.distance;
-                }
-                else
-                {
-                    rayDistance = MaximumRayDistance;
-                }
-            }
-            else
-            {
-                rayDistance = MaximumRayDistance;
-            }
-            rayHitObject = hit.Value.collider.gameObject;
-        }
-        else
-        {
-            rayDistance = MaximumRayDistance;
-        }
-    }
-
     private void MoveWithCurrentSpeed()
     {
         if (currentPoint < movePoints.Count)
@@ -111,7 +233,9 @@ public class VehicleMovement : MonoBehaviour
                 forwardDirection = (goalObject.gameObject.transform.position - movePoints[currentPoint].position).normalized;
             else
                 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
-            Vector3 target = movePoints[currentPoint].position + Vector3.Cross(Vector3.up, forwardDirection).normalized * -1.5f;
+            Vector3 testdirection = Vector3.Cross(Vector3.up, forwardDirection).normalized;
+            Debug.DrawRay(testdirection, Vector3.up * 100f, UnityEngine.Color.red);
+            Vector3 target = movePoints[currentPoint].position + testdirection * distanceFromCentre;
             movingDirection = (target - transform.position).normalized;
 
             float moveDistance = currentSpeed * Time.deltaTime;
@@ -130,12 +254,14 @@ public class VehicleMovement : MonoBehaviour
             }
 
             float distance = Vector3.Distance(transform.position, movePoints[currentPoint].position);
-            if (distance < 2f)
+            if (distance < Mathf.Abs(distanceFromCentre) + 0.5f)
                 movePoints.RemoveAt(0);
 
             if (movingDirection != Vector3.zero && !NearToZero())
             {
                 Quaternion rotation = Quaternion.LookRotation(movingDirection);
+                rotation.x = 0f;
+                rotation.z = 0f;
                 transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
             }
 
@@ -175,7 +301,7 @@ public class VehicleMovement : MonoBehaviour
         Vector3 raycastPosition = transform.position;
         raycastPosition.y += 0.5f;
         //Physics.Raycast(raycastPosition, transform.forward, out hit, maxDistance);
-        Debug.DrawRay(raycastPosition, transform.forward * rayDistance, Color.yellow);
+        Debug.DrawRay(raycastPosition, transform.forward * rayDistance, UnityEngine.Color.yellow);
         if (Physics.Raycast(raycastPosition, transform.forward, out hit, rayDistance))
         {
             return hit;
@@ -186,136 +312,23 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
-    //public void HandleTypeRaycasthit(RaycastHit? hit)
-    //{
-    //    float distanceBetween;
+    public RaycastHit? CheckObjectInBehind()
+    {
+        RaycastHit hit;
+        Vector3 raycastPosition = transform.position;
+        raycastPosition.y += 0.5f;
+        //Physics.Raycast(raycastPosition, transform.forward, out hit, maxDistance);
+        Debug.DrawRay(raycastPosition, -transform.forward * rayDistance, UnityEngine.Color.yellow);
+        if (Physics.Raycast(raycastPosition, -transform.forward, out hit, rayDistance))
+        {
+            return hit;
+        }
+        else
+        {
+            return null;
+        }
+    }
 
-    //    // if vehicle in front
-    //    if (hit.HasValue && DoHitHaveTag(hit.Value, "Vehicle") && IsVehicleSameLane(hit.Value))
-    //    {
-    //        distanceBetween = hit.Value.distance;
-    //        nextObjectSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().currentSpeed;
-    //    }
-    //    // at intersection, if red light
-    //    else if (hit.HasValue && DoHitHaveLayer(hit.Value, LayerMask.NameToLayer("Invisible")) && hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red))
-    //    {
-    //        // if intersection3 and at outer lane
-    //        if (hit.Value.collider.gameObject.transform.parent.parent.CompareTag("Intersection3") && hit.Value.collider.gameObject.transform.parent.name == "Anchor East")
-    //        {
-    //            // if at outer lane and want to turn right
-    //            if (WantToRight())
-    //            {
-    //                if (ThereisCar(hit.Value.collider.gameObject))
-    //                {
-    //                    distanceBetween = hit.Value.distance;
-    //                    nextObjectSpeed = 0f;
-    //                }
-    //                else
-    //                {
-    //                    distanceBetween = 10f;
-    //                    nextObjectSpeed = desiredSpeed;
-    //                }
-    //            }
-    //            // if want to go straight, no need stop
-    //            else
-    //            {
-    //                distanceBetween = 10f;
-    //                nextObjectSpeed = desiredSpeed;
-    //            }
-    //        }
-    //        // if very close to goal, no need stop
-    //        else if (hit.Value.collider.gameObject.transform.parent.parent.CompareTag("Intersection3") && hit.Value.collider.gameObject.transform.parent.name == "Anchor North")
-    //        {
-    //            // fix
-    //            GameObject currentWall = hit.Value.collider.gameObject;
-    //            GameObject nextWall = GetNextWallGameObject(currentWall, 1);
-    //            GameObject nextWall2 = GetNextWallGameObject(currentWall, 2);
-    //            if (WantToRight())
-    //            {
-    //                distanceBetween = 10f;
-    //                nextObjectSpeed = desiredSpeed;
-    //            }
-    //            else
-    //            {
-    //                distanceBetween = 10f;
-    //                nextObjectSpeed = desiredSpeed;
-    //            }
-    //            // fix
-    //        }
-    //        else if (movePoints.Count < 4)
-    //        {
-    //            distanceBetween = 10f;
-    //            nextObjectSpeed = desiredSpeed;
-    //        }
-    //        // if red light, stop
-    //        else
-    //        {
-    //            distanceBetween = hit.Value.distance;
-    //            nextObjectSpeed = 0f;
-    //        }
-    //    }
-    //    else if (hit.HasValue && DoHitHaveLayer(hit.Value, LayerMask.NameToLayer("Invisible")) && hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Green))
-    //    {
-    //        distanceBetween = 10f;
-    //        nextObjectSpeed = desiredSpeed;
-    //    }
-    //    else
-    //    {
-    //        distanceBetween = 10f;
-    //        nextObjectSpeed = desiredSpeed;
-    //    }
-    //    CarFollowingStimulusResponseModel(distanceBetween, nextObjectSpeed);
-    //}
-    // if vehicle
-            // algorithm
-
-
-        // if intersection4
-            // if red light
-                // stop
-
-            // if green light
-                // if turn right
-                    // if opposite road opposite road no car
-                        // normal
-                    // if opposite road got car
-                        // stop
-                        
-
-                // if no turn right (turn left or straight)
-                    // normal
-
-        // if intersection3
-            // if turn right
-                // if from East
-                    // if West no car
-                        // normal
-                    // if West got car
-                        // stop
-
-                // if from North
-                    // if East no car
-                        // normal
-                    // if East got car
-                        // stop
-
-                //
-
-
-            // if turn left
-                // if from West
-                    // normal
-                // if from North
-                    // if West no car
-                        // normal
-                    // if West got car
-                        // stop
-
-            // if straight
-                // normal
-
-        // if no car
-            // normal
     public void HandleTypeRaycasthit2(RaycastHit? hit)
     {
         if (hit.HasValue && DoHitHaveTag(hit.Value, "Vehicle") && IsVehicleSameLane(hit.Value))
@@ -502,7 +515,7 @@ public class VehicleMovement : MonoBehaviour
         RaycastHit hit;
         Vector3 position = wall.transform.position - wall.transform.forward * 10f;
         position.y -= 0.5f;
-        Debug.DrawRay(position, wall.transform.forward * 30f, Color.red);
+        Debug.DrawRay(position, wall.transform.forward * 30f, UnityEngine.Color.red);
         if (Physics.Raycast(position, wall.transform.forward, out hit, 30f))
         {
             if (hit.collider.transform.CompareTag("Vehicle"))
@@ -515,12 +528,6 @@ public class VehicleMovement : MonoBehaviour
     {
         distanceBetween = 10f;
         nextObjectSpeed = desiredSpeed;
-    }
-
-    private void UpdateUsingAlgorithm(RaycastHit hit)
-    {
-        distanceBetween = hit.distance;
-        nextObjectSpeed = hit.collider.gameObject.GetComponent<VehicleMovement>().currentSpeed;
     }
 
     private void UpdateStopAttribute(RaycastHit hit)
@@ -585,14 +592,34 @@ public class VehicleMovement : MonoBehaviour
         movePoints = new List<Bezier.OrientedPoint>(navigator.CurrentPoints);
         Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
         movePoints.Add(goal);
+        //FilterMovePoints();
+    }
+
+    public void RemoveMovePointsWith90Degree()
+    {
+        for (int i = 1; i < movePoints.Count - 1; i++)
+        {
+            float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
+            if (dotResult == 0) 
+            {
+                movePoints.RemoveAt(i);
+            }
+        }
+    }
+
+    public float GetDotResult (Vector3 p1, Vector3 p2, Vector3 p3)
+    {
+        Vector3 v1 = (p2 - p1).normalized;
+        Vector3 v2 = (p3 - p2).normalized;
+        return Vector3.Dot(v1, v2);
     }
 
     public void SetRandomGoal()
     {
         GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
-        if (gameObject.name == "Specific Vehicle 2" || gameObject.name == "Specific Vehicle")
+        if (gameObject.name == "Specific Vehicle 2" || gameObject.name == "Specific Vehicle 2")
         {
-            goalObject = GameObject.Find("SpecificGoal");
+            goalObject = GameObject.Find("Pejabat Pos KOMTAR");
         }
         else if (goalObjects.Length > 0)
         {

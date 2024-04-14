@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 
 public class QueueingLogic : MonoBehaviour
@@ -45,7 +46,7 @@ public class QueueingLogic : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.up, out hit, 100f))
         {
-            if (hit.collider.CompareTag("Vehicle"))
+            if (Tag.CompareTags(hit.collider.transform, Tag.Vehicle))
                 return true;
             return false;
         }

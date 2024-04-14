@@ -28,12 +28,12 @@ public class PathTracking : MonoBehaviour
 
         VehicleMovement vehicleMovement;
         Vector3 startPosition;
-        if (highlight != null && highlight.CompareTag("Vehicle"))
+        if (highlight != null && Tag.CompareTags(highlight.transform, Tag.Vehicle))
         {
             vehicleMovement = highlight.GetComponent<VehicleMovement>();
             startPosition = highlight.transform.position;
         }
-        else if (selection != null && selection.CompareTag("Vehicle"))
+        else if (selection != null && Tag.CompareTags(selection.transform, Tag.Vehicle))
         {
             vehicleMovement = selection.GetComponent<VehicleMovement>();
             startPosition = selection.transform.position;

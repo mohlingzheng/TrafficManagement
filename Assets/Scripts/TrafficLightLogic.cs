@@ -15,8 +15,6 @@ public class TrafficLightLogic : MonoBehaviour
         durations[0] = 3;
         durations[1] = 3;
         durations[2] = 3;
-
-        //StartCoroutine(TrafficLightCycle());
     }
 
     private void FixedUpdate()
@@ -45,19 +43,6 @@ public class TrafficLightLogic : MonoBehaviour
                 //vehicleMovement.FunctionCalledByTrafficLight(hit, gameObject);
                 //vehicleMovement.special = false;
             }
-        }
-    }
-
-    IEnumerator TrafficLightCycle()
-    {
-        while (true)
-        {
-            currentState = TrafficLightState.Green;
-            yield return new WaitForSeconds(durations[0]);
-            //currentState = States.yellow.ToString();
-            //yield return new WaitForSeconds(durations[1]);
-            currentState = TrafficLightState.Red;
-            yield return new WaitForSeconds(durations[2]);
         }
     }
 

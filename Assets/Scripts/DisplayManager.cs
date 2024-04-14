@@ -14,7 +14,7 @@ public class DisplayManager : MonoBehaviour
     
     void Start()
     {
-        inputSystem = GameObject.FindObjectOfType<InputManager>();
+        inputSystem = FindObjectOfType<InputManager>();
     }
 
     // Update is called once per frame
@@ -47,7 +47,7 @@ public class DisplayManager : MonoBehaviour
         detailsPanel.SetActive(true);
         GetSpecificText(textMeshProUGUIs, "Name").text = gameObject.name;
         GetSpecificText(textMeshProUGUIs, "ObjectType").text = gameObject.tag;
-        if (gameObject.CompareTag("Vehicle"))
+        if (Tag.CompareTags(gameObject.transform, Tag.Vehicle))
         {
             GetSpecificText(textMeshProUGUIs, "Attribute").text = gameObject.GetComponent<VehicleMovement>().currentSpeed.ToString();
         }
