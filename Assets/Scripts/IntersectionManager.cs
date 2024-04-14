@@ -5,8 +5,10 @@ using UnityEngine;
 
 public class IntersectionManager : MonoBehaviour
 {
-    public GameObject[] intersection3;
-    public GameObject[] intersection4;
+    public GameObject[] intersection_3_small;
+    public GameObject[] intersection_4_small;
+    public GameObject[] intersection_3_large;
+    public GameObject[] intersection_4_large;
     string[] currentState = { };
     string[] NorthSouth = { "Anchor North", "Anchor South" };
     string[] EastWest = { "Anchor East", "Anchor West" };
@@ -27,13 +29,15 @@ public class IntersectionManager : MonoBehaviour
 
     public void GetLatestIntersection()
     {
-        intersection3 = GameObject.FindGameObjectsWithTag(Tag.Intersection_3_Small);
-        intersection4 = GameObject.FindGameObjectsWithTag(Tag.Intersection_4_Small);
+        intersection_3_small = GameObject.FindGameObjectsWithTag(Tag.Intersection_3_Small);
+        intersection_4_small = GameObject.FindGameObjectsWithTag(Tag.Intersection_4_Small);
+        intersection_3_large = GameObject.FindGameObjectsWithTag(Tag.Intersection_3_Large);
+        intersection_4_large = GameObject.FindGameObjectsWithTag(Tag.Intersection_4_Large);
     }
 
     private void GenerateTrafficLightBlock()
     {
-        foreach (var intersection in intersection4)
+        foreach (var intersection in intersection_4_small)
         {
             if (intersection == null)
                 continue;
@@ -42,23 +46,14 @@ public class IntersectionManager : MonoBehaviour
             {
                 
                 GameObject block;
-                if (roadAnchor.transform.childCount <= 0)
-                    block = Instantiate(TrafficLightBlockGameObject, roadAnchor.transform);
-                else
-                    block = roadAnchor.transform.GetChild(0).gameObject;
+                block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
 
                 if (block.transform.position != GetRayPositionFromRoadAnchor(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
                 {
                     block.transform.SetPositionAndRotation(GetRayPositionFromRoadAnchor(roadAnchor), roadAnchor.transform.rotation);
                 }
-                if (IsStringInsideArray(currentState, roadAnchor.name))
-                {
-                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
-                }
-                else
-                {
-                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Red);
-                }
+                TrafficLightStatusUpdate(block, currentState, roadAnchor.name);
+                
 
                 GameObject trafficLight;
                 if (block.transform.childCount <= 0)
@@ -80,7 +75,7 @@ public class IntersectionManager : MonoBehaviour
             }
         }
 
-        foreach (var intersection in intersection3)
+        foreach (var intersection in intersection_3_small)
         {
             if (intersection == null)
                 continue;
@@ -88,14 +83,76 @@ public class IntersectionManager : MonoBehaviour
             foreach (var roadAnchor in roadAnchors)
             {
                 GameObject block;
-                if (roadAnchor.transform.childCount <= 0)
-                    block = Instantiate(TrafficLightBlockGameObject, roadAnchor.transform);
-                else
-                    block = roadAnchor.transform.GetChild(0).gameObject;
+                block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
 
                 if (block.transform.position != GetRayPositionFromRoadAnchor(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
                 {
                     block.transform.SetPositionAndRotation(GetRayPositionFromRoadAnchor(roadAnchor), roadAnchor.transform.rotation);
+                }
+                if (roadAnchor.name == "Anchor West")
+                {
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
+                }
+                else if (IsStringInsideArray(currentState, roadAnchor.name))
+                {
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
+                }
+                else
+                {
+                    block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Red);
+                }
+
+            }
+        }
+
+        foreach (var intersection in intersection_4_large)
+        {
+            if (intersection == null)
+                continue;
+            RoadAnchor[] roadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
+            foreach (var roadAnchor in roadAnchors)
+            {
+                GameObject block;
+                block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
+
+                if (block.transform.position != GetRayPositionFromRoadAnchorLarge(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
+                {
+                    block.transform.SetPositionAndRotation(GetRayPositionFromRoadAnchorLarge(roadAnchor), roadAnchor.transform.rotation);
+                }
+                TrafficLightStatusUpdate(block, currentState, roadAnchor.name);
+
+                GameObject trafficLight;
+                if (block.transform.childCount <= 0)
+                {
+                    trafficLight = Instantiate(TrafficLightPrefab, block.transform);
+                    Vector3 position = block.transform.localPosition;
+                    position.x -= 0.8f;
+                    position.y -= 1.5f;
+                    trafficLight.transform.localPosition = position;
+                    trafficLight.transform.rotation = block.transform.rotation;
+                    trafficLight.transform.localScale = new Vector3(-0.5f, 1f, 0.5f);
+                }
+                else
+                {
+                    trafficLight = block.transform.GetChild(0).gameObject;
+                }
+                TrafficLightSwitch(trafficLight, block);
+            }
+        }
+
+        foreach (var intersection in intersection_3_large)
+        {
+            if (intersection == null)
+                continue;
+            RoadAnchor[] roadAnchors = intersection.GetComponentsInChildren<RoadAnchor>();
+            foreach (var roadAnchor in roadAnchors)
+            {
+                GameObject block;
+                block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
+
+                if (block.transform.position != GetRayPositionFromRoadAnchorLarge(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
+                {
+                    block.transform.SetPositionAndRotation(GetRayPositionFromRoadAnchorLarge(roadAnchor), roadAnchor.transform.rotation);
                 }
                 if (roadAnchor.name == "Anchor West")
                 {
@@ -136,6 +193,26 @@ public class IntersectionManager : MonoBehaviour
         position.y += 1f;
         position = position - roadAnchor.transform.forward * 2.5f;
         return position;
+    }
+    Vector3 GetRayPositionFromRoadAnchorLarge(Barmetler.RoadSystem.RoadAnchor roadAnchor)
+    {
+        Vector3 position = roadAnchor.transform.position;
+        position = position + roadAnchor.transform.rotation * Vector3.right * 3.5f;
+        position.y += 1f;
+        position = position - roadAnchor.transform.forward * 2.5f;
+        return position;
+    }
+
+    void TrafficLightStatusUpdate(GameObject block, string[] currentState, string name)
+    {
+        if (IsStringInsideArray(currentState, name))
+        {
+            block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
+        }
+        else
+        {
+            block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Red);
+        }
     }
 
     bool IsStringInsideArray(string[] current, string name)

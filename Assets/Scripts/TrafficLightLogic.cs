@@ -19,7 +19,7 @@ public class TrafficLightLogic : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!transform.parent.parent.CompareTag("Intersection3"))
+        if (!Tag.CompareTags(transform.parent.parent, Tag.Intersection_3_Small))
         {
             DisplayTrafficLightColor();
         }

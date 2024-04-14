@@ -32,6 +32,11 @@ public class VehicleMovement : MonoBehaviour
     public float nextObjectSpeed;
     public float relativeSpeed;
 
+    [Header("Lane Changing Model")]
+    public string currentRoadType;
+    public float distanceFromCentre = -4f;
+    public bool highSpeed;
+
     public float rayDistance = 10f;
     const float MaximumRayDistance = 10f;
     public GameObject rayHitObject = null;
@@ -45,9 +50,6 @@ public class VehicleMovement : MonoBehaviour
 
     public float CountDistance = 0f;
     public bool Count = false;
-
-    public float distanceFromCentre = -4f;
-    public bool highSpeed;
 
     void Start()
     {
@@ -63,17 +65,65 @@ public class VehicleMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        DynamicSpeed();
-        RemoveGameObject();
-        if (highSpeed)
-        {
-            distanceFromCentre = OnLanes.GetValue("High");
-        }
-        else {
-            distanceFromCentre = OnLanes.GetValue("Low");
-        }
         LaneChangingLogic();
+        DynamicSpeedLogic();
+        RemoveGameObject();
         RemoveMovePointsWith90Degree();
+    }
+
+    public void LaneChangingLogic()
+    {
+        CheckRoadTypeOn();
+        if (currentRoadType == OnLanes.Small || currentRoadType == OnLanes.Transition_2_4)
+        {
+            highSpeed = true;
+        }
+        else if (currentRoadType == OnLanes.Large)
+        {
+            ChangeLane();
+        }
+        else if (currentRoadType == OnLanes.Transition_4_2)
+        {
+            if (!highSpeed)
+            {
+                // find chance to go to high speed lane
+                // if no chance, stop and wait
+                if (CheckLaneFeasible("Right"))
+                {
+                    highSpeed = true;
+                }
+            }
+        }
+        distanceFromCentre = highSpeed ? OnLanes.GetValue(OnLanes.High) : OnLanes.GetValue(OnLanes.Low);
+    }
+
+    private void CheckRoadTypeOn()
+    {
+        RaycastHit hit;
+        Vector3 position = transform.position;
+        position.y += 0.5f;
+        if (Physics.Raycast(position, Vector3.down, out hit, 2f))
+        {
+            if (Tag.CompareTags(hit.collider.transform, Tag.Road_Small))
+            {
+                currentRoadType = OnLanes.Small;
+            }
+            else if (Tag.CompareTags(hit.collider.transform, Tag.Road_Large))
+            {
+                currentRoadType = OnLanes.Large;
+            }
+            else if (Tag.CompareTags(hit.collider.transform, Tag.Transition))
+            {
+                if (currentRoadType == OnLanes.Small)
+                {
+                    currentRoadType = OnLanes.Transition_2_4;
+                }
+                else if (currentRoadType == OnLanes.Large)
+                {
+                    currentRoadType = OnLanes.Transition_4_2;
+                }
+            }
+        }
     }
 
     void OnDrawGizmos()
@@ -85,7 +135,7 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
-    private void LaneChangingLogic()
+    private void ChangeLane()
     {
         if (!highSpeed)
         {
@@ -213,7 +263,7 @@ public class VehicleMovement : MonoBehaviour
         return false;
     }
 
-    private void DynamicSpeed()
+    private void DynamicSpeedLogic()
     {
         RaycastHit? hit = CheckObjectInfront();
         //DynamicRaycastDistance(hit);
@@ -338,7 +388,7 @@ public class VehicleMovement : MonoBehaviour
         else if (
             hit.HasValue
             && DoHitHaveLayer(hit.Value, "Invisible")
-            && hit.Value.collider.transform.parent.parent.CompareTag("Intersection4")
+            && Tag.CompareTags(hit.Value.collider.transform.parent.parent, Tag.Intersection_4_Small, Tag.Intersection_4_Large)
             )
         {
             if (hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red))
@@ -371,7 +421,7 @@ public class VehicleMovement : MonoBehaviour
         else if (
             hit.HasValue
             && DoHitHaveLayer(hit.Value, "Invisible")
-            && hit.Value.collider.transform.parent.parent.CompareTag("Intersection3")
+            && Tag.CompareTags(hit.Value.collider.transform.parent.parent, Tag.Intersection_3_Small, Tag.Intersection_3_Large)
             )
         {
             if (WantToRight())

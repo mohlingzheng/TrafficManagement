@@ -33,6 +33,7 @@ public static class Tag
     public static readonly string Road_Small = "Road_Small";
     public static readonly string Road_Large = "Road_Large";
     public static readonly string Queue = "Queue";
+    public static readonly string Transition = "Transition";
 
     public static bool CompareTags(Transform target, params string[] tags)
     {
@@ -49,6 +50,16 @@ public static class Tag
 
 public static class OnLanes
 {
+    public static readonly string Large = "Large";
+    public static readonly string Small = "Small";
+
+    public static readonly string High = "High";
+    public static readonly string Low = "Low";
+
+    public static readonly string Transition_2_4 = "Transition_2_4";
+    public static readonly string Transition_4_2 = "Transition_4_2";
+
+
     private static readonly Dictionary<string, float> values = new Dictionary<string, float>
     {
         {"Low", -6f},
