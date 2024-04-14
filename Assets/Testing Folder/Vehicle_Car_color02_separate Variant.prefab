@@ -34,7 +34,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 705.6
+      value: 805.6
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.y
@@ -42,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 467.5
+      value: 431.2
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalRotation.w
@@ -137,6 +137,10 @@ MonoBehaviour:
   currentAcceleration: 5
   nextObjectSpeed: 0
   relativeSpeed: 0
+  currentRoadType: 
+  distanceFromCentre: -4
+  highSpeed: 0
+  stopDueToTraffic: 0
   rayDistance: 10
   rayHitObject: {fileID: 0}
   distanceDetect: 0
@@ -145,8 +149,6 @@ MonoBehaviour:
   special: 0
   CountDistance: 0
   Count: 0
-  distanceFromCentre: -4
-  highSpeed: 0
 --- !u!65 &2887095288479044207
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -36,6 +36,7 @@ public class VehicleMovement : MonoBehaviour
     public string currentRoadType;
     public float distanceFromCentre = -4f;
     public bool highSpeed;
+    public bool stopDueToTraffic;
 
     public float rayDistance = 10f;
     const float MaximumRayDistance = 10f;
@@ -78,7 +79,7 @@ public class VehicleMovement : MonoBehaviour
         {
             highSpeed = true;
         }
-        else if (currentRoadType == OnLanes.Large)
+        else if (currentRoadType == OnLanes.Large && !stopDueToTraffic)
         {
             ChangeLane();
         }
@@ -104,7 +105,7 @@ public class VehicleMovement : MonoBehaviour
         position.y += 0.5f;
         if (Physics.Raycast(position, Vector3.down, out hit, 2f))
         {
-            if (Tag.CompareTags(hit.collider.transform, Tag.Road_Small))
+            if (Tag.CompareTags(hit.collider.transform, Tag.Road_Small, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
             {
                 currentRoadType = OnLanes.Small;
             }
@@ -121,6 +122,10 @@ public class VehicleMovement : MonoBehaviour
                 else if (currentRoadType == OnLanes.Large)
                 {
                     currentRoadType = OnLanes.Transition_4_2;
+                }
+                else
+                {
+                    // remain the value of currentRoadType
                 }
             }
         }
@@ -160,7 +165,7 @@ public class VehicleMovement : MonoBehaviour
                 if (Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle))
                 {
                     float lastCarSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().desiredSpeed;
-                    if (lastCarSpeed - desiredSpeed > 3f && CheckLaneFeasible("Left"))
+                    if (lastCarSpeed - desiredSpeed > 1f && CheckLaneFeasible("Left"))
                     {
                         highSpeed = false;
                     }
@@ -582,6 +587,11 @@ public class VehicleMovement : MonoBehaviour
 
     private void UpdateStopAttribute(RaycastHit hit)
     {
+        if (!Tag.CompareTags(hit.collider.transform, Tag.Vehicle))
+            stopDueToTraffic = true;
+        else
+            stopDueToTraffic = hit.collider.gameObject.GetComponent<VehicleMovement>().stopDueToTraffic;
+
         distanceBetween = hit.distance;
         nextObjectSpeed = 0f;
     }
