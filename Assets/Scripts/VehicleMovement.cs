@@ -37,7 +37,10 @@ public class VehicleMovement : MonoBehaviour
     public float distanceFromCentre = -4f;
     public bool highSpeed;
     public bool stopDueToTraffic;
+    public bool laneJustChanged = false;
+    public float laneChangingClock = 0f;
 
+    [Header("Others")]
     public float rayDistance = 10f;
     const float MaximumRayDistance = 10f;
     public GameObject rayHitObject = null;
@@ -66,18 +69,24 @@ public class VehicleMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        LaneChangingLogic();
-        DynamicSpeedLogic();
-        RemoveGameObject();
         RemoveMovePointsWith90Degree();
+        DynamicSpeedLogic();
+        LaneChangingLogic();
+        RemoveGameObject();
     }
 
     public void LaneChangingLogic()
     {
         CheckRoadTypeOn();
+        HandleRoadTypeCondition();
+        LaneChangingClockCounter();
+    }
+
+    private void HandleRoadTypeCondition()
+    {
         if (currentRoadType == OnLanes.Small || currentRoadType == OnLanes.Transition_2_4)
         {
-            highSpeed = true;
+            UpdateHighSpeed(true);
         }
         else if (currentRoadType == OnLanes.Large && !stopDueToTraffic)
         {
@@ -91,11 +100,24 @@ public class VehicleMovement : MonoBehaviour
                 // if no chance, stop and wait
                 if (CheckLaneFeasible("Right"))
                 {
-                    highSpeed = true;
+                    UpdateHighSpeed(true);
                 }
             }
         }
         distanceFromCentre = highSpeed ? OnLanes.GetValue(OnLanes.High) : OnLanes.GetValue(OnLanes.Low);
+    }
+
+    private void LaneChangingClockCounter()
+    {
+        if (laneJustChanged)
+        {
+            laneChangingClock = laneChangingClock + Time.deltaTime;
+            if (laneChangingClock > 3)
+            {
+                laneChangingClock = 0;
+                laneJustChanged = false;
+            }
+        }
     }
 
     private void CheckRoadTypeOn()
@@ -142,17 +164,17 @@ public class VehicleMovement : MonoBehaviour
 
     private void ChangeLane()
     {
-        if (!highSpeed)
+        if (!highSpeed && !stopDueToTraffic)
         {
             RaycastHit? hit = CheckObjectInfront();
             if (hit.HasValue)
             {
-                if (Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle))
+                if (Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle) && !hit.Value.collider.gameObject.GetComponent<VehicleMovement>().stopDueToTraffic)
                 {
                     float nextCarSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().currentSpeed;
                     if (desiredSpeed - nextCarSpeed > 3f && CheckLaneFeasible("Right"))
                     {
-                        highSpeed = true;
+                        UpdateHighSpeed(true);
                     }
                 }
             }
@@ -167,7 +189,7 @@ public class VehicleMovement : MonoBehaviour
                     float lastCarSpeed = hit.Value.collider.gameObject.GetComponent<VehicleMovement>().desiredSpeed;
                     if (lastCarSpeed - desiredSpeed > 1f && CheckLaneFeasible("Left"))
                     {
-                        highSpeed = false;
+                        UpdateHighSpeed(false);
                     }
                 }
             }
@@ -175,9 +197,18 @@ public class VehicleMovement : MonoBehaviour
         
     }
 
-    public bool CheckLaneFeasible(string lane)
+    public void UpdateHighSpeed(bool result)
     {
-        if (lane == "Right")
+        if (!laneJustChanged)
+        {
+            highSpeed = result;
+            laneJustChanged = true;
+        }
+    }
+
+    public bool CheckLaneFeasible(string laneToTurnTo)
+    {
+        if (laneToTurnTo == "Right")
         {
             // Get the car's position and rotation
             Vector3 carPosition = transform.position;
@@ -215,12 +246,12 @@ public class VehicleMovement : MonoBehaviour
                     backwardDistance = hitBackward.distance;
             }
 
-            if (forwardDistance + backwardDistance > 10f)
+            if (forwardDistance + backwardDistance > 16f)
             {
                 return true;
             }
         }   
-        else if (lane == "Left")
+        else if (laneToTurnTo == "Left")
         {
             // Get the car's position and rotation
             Vector3 carPosition = transform.position;
@@ -271,11 +302,7 @@ public class VehicleMovement : MonoBehaviour
     private void DynamicSpeedLogic()
     {
         RaycastHit? hit = CheckObjectInfront();
-        //DynamicRaycastDistance(hit);
-        //if (!special)
-        HandleTypeRaycasthit2(hit);
-        //else
-        //    FunctionCalledByTrafficLight(hit, );
+        HandleTypeRaycasthit(hit);
         MoveWithCurrentSpeed();
     }
 
@@ -384,7 +411,7 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
-    public void HandleTypeRaycasthit2(RaycastHit? hit)
+    public void HandleTypeRaycasthit(RaycastHit? hit)
     {
         if (hit.HasValue && DoHitHaveTag(hit.Value, "Vehicle") && IsVehicleSameLane(hit.Value))
         {

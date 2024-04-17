@@ -265,6 +265,10 @@ public class InputManager : MonoBehaviour
                     SetUIOnRoadPreview(1);
                     roadBuildingManager.IncreaseCount();
                 }
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Road_Large))
+                {
+
+                }
                 else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
                 {
                     Debug.Log("first intersection");
@@ -273,6 +277,10 @@ public class InputManager : MonoBehaviour
                     firstAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(1);
                     roadBuildingManager.IncreaseCount();
+                }
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Large))
+                {
+
                 }
                 else
                 {
@@ -293,6 +301,10 @@ public class InputManager : MonoBehaviour
                     secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(2);
                 }
+                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Large))
+                {
+
+                }
                 else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
                 {
                     Debug.Log("second intersection");
@@ -300,6 +312,10 @@ public class InputManager : MonoBehaviour
                     secondSelectedGameObject = pointedGameObject;
                     secondAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(2);
+                }
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Large))
+                {
+
                 }
                 else
                 {

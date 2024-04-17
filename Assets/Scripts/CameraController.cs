@@ -56,9 +56,9 @@ public class CameraController : MonoBehaviour
 
     Vector3 ClampPositionVector(Vector3 value)
     {
-        value.x = Mathf.Clamp(value.x, 0f, 1000f);
+        value.x = Mathf.Clamp(value.x, 0f, 1500f);
         value.y = Mathf.Clamp(value.y, 5f, 5f);
-        value.z = Mathf.Clamp(value.z, 0f, 1000f);
+        value.z = Mathf.Clamp(value.z, 0f, 711f);
         return value;
     }
 

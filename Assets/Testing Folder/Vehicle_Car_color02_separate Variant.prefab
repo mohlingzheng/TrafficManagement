@@ -34,7 +34,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 805.6
+      value: 165.5
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.y
@@ -42,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 431.2
+      value: 30.3
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 12dd350c4c7e7754b807b38a22b4d078, type: 3}
       propertyPath: m_LocalRotation.w
@@ -141,6 +141,8 @@ MonoBehaviour:
   distanceFromCentre: -4
   highSpeed: 0
   stopDueToTraffic: 0
+  laneJustChanged: 0
+  laneChangingClock: 0
   rayDistance: 10
   rayHitObject: {fileID: 0}
   distanceDetect: 0
