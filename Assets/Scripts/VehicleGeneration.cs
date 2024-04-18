@@ -10,7 +10,7 @@ public class VehicleGeneration : MonoBehaviour
 {
     public List<GameObject> queuePoints;
     public QueueingLogic[] queueLogics;
-    public GameObject VehiclePrefab;
+    public GameObject[] VehiclePrefabs;
     public GameObject QueueSystem;
     public int vehicleCount = 0;
     public int carLimit = 100;
@@ -21,6 +21,7 @@ public class VehicleGeneration : MonoBehaviour
     void Start()
     {
         SetEntryPoints();
+        VehiclePrefabs = Resources.LoadAll<GameObject>("Prefabs/Vehicle");
     }
 
     void FixedUpdate()
@@ -32,9 +33,10 @@ public class VehicleGeneration : MonoBehaviour
         }
         if (vehicleCount < carLimit)
         {
-            int random = Random.Range(0, queuePoints.Count);
-            QueueingLogic queueingLogic = queuePoints[random].GetComponent<QueueingLogic>();
-            queueingLogic.queue.Enqueue(VehiclePrefab);
+            int randomSpawn = Random.Range(0, queuePoints.Count);
+            QueueingLogic queueingLogic = queuePoints[randomSpawn].GetComponent<QueueingLogic>();
+            int randomVehicle = Random.Range(0, VehiclePrefabs.Length);
+            queueingLogic.queue.Enqueue(VehiclePrefabs[randomVehicle]);
             vehicleCount++;
         }
     }
@@ -66,7 +68,7 @@ public class VehicleGeneration : MonoBehaviour
         Vector3 spawnPosition = new Vector3(226.8f, 0f, 28.5f);
         if (!specificVehicle)
         {
-            specificVehicle = Instantiate(VehiclePrefab, spawnPosition, Quaternion.identity);
+            specificVehicle = Instantiate(VehiclePrefabs[0], spawnPosition, Quaternion.identity);
             specificVehicle.name = "Specific Vehicle";
             specificVehicle.GetComponent<VehicleMovement>().desiredSpeed = 1f;
         }
