@@ -424,6 +424,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 400010}
+  - component: {fileID: 3048470094268399954}
+  - component: {fileID: 1511858940934594126}
+  - component: {fileID: 885527780326431129}
+  - component: {fileID: 6679716395142282909}
   m_Layer: 0
   m_Name: Vehicle_Car_color01_separate
   m_TagString: Vehicle
@@ -451,3 +455,105 @@ Transform:
   - {fileID: 400000}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3048470094268399954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9ec9c7869e879745944e9674e9ed2c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentRoadSystem: {fileID: 0}
+  Goal: {x: 0, y: 0, z: 0}
+  GraphStepSize: 1
+  MinDistanceYScale: 1
+  MinDistanceToRoadToConnect: 10
+--- !u!114 &1511858940934594126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dccac749eaff0da43927b45a11678532, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  goalObject: {fileID: 0}
+  vehicleGeneration: {fileID: 0}
+  movePointReady: 0
+  isSelected: 0
+  currentSpeed: 0
+  desiredSpeed: 0
+  rotationSpeed: 10
+  movingDirection: {x: 0, y: 0, z: 0}
+  currentAcceleration: 5
+  nextObjectSpeed: 0
+  relativeSpeed: 0
+  currentRoadType: 
+  distanceFromCentre: -4
+  highSpeed: 0
+  stopDueToTraffic: 0
+  laneJustChanged: 0
+  laneChangingClock: 0
+  rayDistance: 10
+  rayHitObject: {fileID: 0}
+  distanceDetect: 0
+  distanceBetween: 0
+  dotProduct: 0
+  special: 0
+  CountDistance: 0
+  Count: 0
+--- !u!65 &885527780326431129
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100010}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.9231262, y: 2.0394661, z: 7.1390133}
+  m_Center: {x: 0.04890442, y: 1.2659405, z: -0.019719303}
+--- !u!54 &6679716395142282909
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100010}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0

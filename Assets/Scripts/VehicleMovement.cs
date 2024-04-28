@@ -153,14 +153,14 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
-    void OnDrawGizmos()
-    {
-        for (int i = 1; i < movePoints.Count - 1; i++)
-        {
-            Gizmos.color = UnityEngine.Color.blue;
-            Gizmos.DrawSphere(movePoints[i].position, 1f);
-        }
-    }
+    //void OnDrawGizmos()
+    //{
+    //    for (int i = 1; i < movePoints.Count - 1; i++)
+    //    {
+    //        Gizmos.color = UnityEngine.Color.blue;
+    //        Gizmos.DrawSphere(movePoints[i].position, 1f);
+    //    }
+    //}
 
     private void ChangeLane()
     {
@@ -386,6 +386,10 @@ public class VehicleMovement : MonoBehaviour
         Debug.DrawRay(raycastPosition, transform.forward * rayDistance, UnityEngine.Color.yellow);
         if (Physics.Raycast(raycastPosition, transform.forward, out hit, rayDistance))
         {
+            if (hit.collider.name == goalObject.name)
+            {
+                Debug.Log("obs");
+            }
             return hit;
         }
         else
@@ -665,7 +669,13 @@ public class VehicleMovement : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             SetMovePoints();
             yield return new WaitForSeconds(0.5f);
-            if (movePoints.Count > 2)
+            SetMovePoints();
+            yield return new WaitForSeconds(0.5f);
+            SetMovePoints();
+            yield return new WaitForSeconds(0.5f);
+            SetMovePoints();
+            yield return new WaitForSeconds(0.5f);
+            if (movePoints.Count > 3)
             {
                 movePointReady = true;
             }
@@ -684,6 +694,8 @@ public class VehicleMovement : MonoBehaviour
 
     public void RemoveMovePointsWith90Degree()
     {
+        if (movePoints.Count <= 3 && !movePointReady)
+            return;
         for (int i = 1; i < movePoints.Count - 1; i++)
         {
             float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
@@ -726,7 +738,7 @@ public class VehicleMovement : MonoBehaviour
     {
         Vector3 center = new Vector3(500f, 0f, 500f);
         float distance = Vector3.Distance(center, gameObject.transform.position);
-        if (distance > 800f)
+        if (distance > 1000f)
         {
             Destroy(gameObject);
         }

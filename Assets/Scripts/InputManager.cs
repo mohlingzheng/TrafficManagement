@@ -27,11 +27,11 @@ public class InputManager : MonoBehaviour
     [Header("Canvas")]
     public GameObject roadBuildingPanel;
     public GameObject buttonPanel;
+    public Button SelectButton;
 
     [Header("Raycast")]
     public Vector3 pointedPosition = Vector3.zero;
     public GameObject pointedGameObject = null;
-
 
     [Header("Outline")]
     public Transform highlight;
@@ -53,12 +53,22 @@ public class InputManager : MonoBehaviour
 
     void Start()
     {
-        ChangeUIWithInputMode();
+        //ChangeUIWithInputMode();
+        if (EventSystem.current == null)
+        {
+            Debug.LogError("No EventSystem found in the scene.");
+            return;
+        }
+        EventSystem.current.SetSelectedGameObject(SelectButton.gameObject);
     }
 
     void FixedUpdate()
     {
         ButtonInteraction();
+        if (!selection)
+        {
+            selection = GameObject.FindGameObjectWithTag(Tag.Vehicle).transform;
+        }
     }
 
     public void YButtonInteractButton()
@@ -67,22 +77,6 @@ public class InputManager : MonoBehaviour
             ExecuteEvents.Execute(pauseButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
         else
             ExecuteEvents.Execute(resumeButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-    }
-
-    public void Pause()
-    {
-        Time.timeScale = 0;
-        pauseButton.gameObject.SetActive(false);
-        resumeButton.gameObject.SetActive(true);
-        Debug.Log("pause");
-    }
-
-    public void Resume()
-    {
-        Time.timeScale = 1;
-        pauseButton.gameObject.SetActive(true);
-        resumeButton.gameObject.SetActive(false);
-        Debug.Log("resume");
     }
 
     void ButtonInteraction()
@@ -113,6 +107,11 @@ public class InputManager : MonoBehaviour
             developer.GetComponentInChildren<TextMeshProUGUI>().text = vehicleGeneration.carLimit.ToString();
         }
 
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            PathFindingRecalculate();
+        }
+
     }
 
     public void GetRaycastObjectHit()
@@ -126,24 +125,30 @@ public class InputManager : MonoBehaviour
             {
                 float radius = 10f;
                 Collider[] colliders = Physics.OverlapSphere(hit.point, radius);
-                foreach (Collider collider in colliders)
+                GameObject gameObject;
+                string[] vehiclesTag = new string[] { Tag.Vehicle };
+                gameObject = GetPointedGameObjectFromListColliders(colliders, hit, vehiclesTag);
+                if (gameObject != null)
                 {
-                    if (collider.transform.CompareTag(Tag.Vehicle))
-                    {
-                        pointedGameObject = collider.gameObject;
-                        OutlineGameObject(pointedGameObject.transform);
-                        return;
-                    }
+                    pointedGameObject = gameObject;
+                    OutlineGameObject(pointedGameObject.transform);
+                    return;
                 }
-
-                foreach (Collider collider in colliders)
+                string[] goalsTag = new string[] { Tag.Goal };
+                gameObject = GetPointedGameObjectFromListColliders(colliders, hit, goalsTag);
+                if (gameObject != null)
                 {
-                    if (Tag.CompareTags(collider.transform, Tag.Road_Small, Tag.Road_Large ))
-                    {
-                        pointedGameObject = collider.gameObject;
-                        OutlineGameObject(pointedGameObject.transform);
-                        return;
-                    }
+                    pointedGameObject = gameObject;
+                    OutlineGameObject(pointedGameObject.transform);
+                    return;
+                }
+                string[] roadsTag = new string[] { Tag.Road_Small, Tag.Road_Large };
+                gameObject = GetPointedGameObjectFromListColliders(colliders, hit, roadsTag);
+                if (gameObject != null)
+                {
+                    pointedGameObject = gameObject;
+                    OutlineGameObject(pointedGameObject.transform);
+                    return;
                 }
 
                 if (pointedGameObject == null)
@@ -164,6 +169,35 @@ public class InputManager : MonoBehaviour
             else
                 pointedGameObject = null;
         }
+    }
+
+    private GameObject GetPointedGameObjectFromListColliders(Collider[] colliders, RaycastHit hit, string[] tags)
+    {
+        List<Collider> selectedColliders = new List<Collider>();
+        foreach (Collider collider in colliders)
+        {
+            if (Tag.CompareTags(collider.transform, tags))
+            {
+                selectedColliders.Add(collider);
+            }
+        }
+
+        if (selectedColliders.Count > 0)
+        {
+            float closestDistance = Mathf.Infinity;
+            Collider closestCollider = null;
+            for (int i = 0; i < selectedColliders.Count; i++)
+            {
+                float distance = Vector3.Distance(hit.point, selectedColliders[i].transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestCollider = selectedColliders[i];
+                }
+            }
+            return closestCollider.gameObject;
+        }
+        return null;
     }
 
     public void OutlineGameObject(Transform transform)
@@ -254,7 +288,7 @@ public class InputManager : MonoBehaviour
     {
         if (Input.GetButtonDown("A") && confirm == false)
         {
-            if (firstPoint == Vector3.zero)
+            if (firstPoint == Vector3.zero && pointedGameObject.transform.parent == roadSystem.gameObject.transform)
             {
                 if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small))
                 {
@@ -265,9 +299,14 @@ public class InputManager : MonoBehaviour
                     SetUIOnRoadPreview(1);
                     roadBuildingManager.IncreaseCount();
                 }
-                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Road_Large))
+                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Large))
                 {
-
+                    Debug.Log("first road");
+                    firstPoint = pointedPosition;
+                    firstSelectedGameObject = pointedGameObject;
+                    firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(1);
+                    roadBuildingManager.IncreaseCount();
                 }
                 else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
                 {
@@ -280,14 +319,19 @@ public class InputManager : MonoBehaviour
                 }
                 else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Large))
                 {
-
+                    Debug.Log("first intersection");
+                    firstPoint = pointedPosition;
+                    firstSelectedGameObject = pointedGameObject;
+                    firstAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(1);
+                    roadBuildingManager.IncreaseCount();
                 }
                 else
                 {
                     Debug.Log("Do nothing");
                 }
             }
-            else if (secondPoint == Vector3.zero)
+            else if (secondPoint == Vector3.zero && pointedGameObject.transform.parent == roadSystem.gameObject.transform)
             {
                 if (pointedGameObject == firstSelectedGameObject)
                 {
@@ -303,7 +347,11 @@ public class InputManager : MonoBehaviour
                 }
                 else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Large))
                 {
-
+                    Debug.Log("second road");
+                    secondPoint = pointedPosition;
+                    secondSelectedGameObject = pointedGameObject;
+                    secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(2);
                 }
                 else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
                 {
@@ -315,7 +363,11 @@ public class InputManager : MonoBehaviour
                 }
                 else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Large))
                 {
-
+                    Debug.Log("second intersection");
+                    secondPoint = pointedPosition;
+                    secondSelectedGameObject = pointedGameObject;
+                    secondAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Preview);
+                    SetUIOnRoadPreview(2);
                 }
                 else
                 {
@@ -335,17 +387,18 @@ public class InputManager : MonoBehaviour
         else if (Input.GetButtonDown("A") && confirm)
         {
             Debug.Log("implement build");
-            if (Tag.CompareTags(firstSelectedGameObject.transform, Tag.Road_Small))
+            if (Tag.CompareTags(firstSelectedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
                 firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
             else 
                 firstAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, firstSelectedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Actual);
 
-            if (Tag.CompareTags(secondSelectedGameObject.transform, Tag.Road_Small))
+            if (Tag.CompareTags(secondSelectedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
                 secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
             else
                 secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
 
             roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
+            roadSystem.ConstructGraph();
             ResetRoadBuilding();
             DestroyAllPreviewObject();
             intersectionManager.GetLatestIntersection();
@@ -484,7 +537,13 @@ public class InputManager : MonoBehaviour
 
     private void PathFindingRecalculate()
     {
-        GameObject[] vehicles = GameObject.FindGameObjectsWithTag("Vehicle");
+        float time = 0;
+        while (time < 3)
+        {
+            time += Time.deltaTime;
+        }
+        GameObject[] vehicles = GameObject.FindGameObjectsWithTag(Tag.Vehicle);
+        Debug.Log("Vehicle recalculating path");
         foreach (GameObject vehicle in vehicles)
         {
             VehicleMovement vehicleMovement = vehicle.GetComponent<VehicleMovement>();

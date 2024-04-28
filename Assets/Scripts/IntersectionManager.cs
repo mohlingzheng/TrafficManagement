@@ -134,7 +134,6 @@ public class IntersectionManager : MonoBehaviour
                     position.y -= 1.5f;
                     trafficLight.transform.localPosition = position;
                     trafficLight.transform.rotation = block.transform.rotation;
-                    Debug.Log(trafficLight.transform.localScale);
                     Vector3 parentScale = block.transform.localScale;
                     Vector3 oriScale = trafficLight.transform.localScale;
                     Vector3 newScale = new Vector3(oriScale.x / parentScale.x, oriScale.y / parentScale.y, oriScale.z / parentScale.z);

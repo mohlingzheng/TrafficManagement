@@ -28,9 +28,10 @@ public class GoalManager : MonoBehaviour
         GameObject[] buildings = GameObject.FindGameObjectsWithTag(Tag.Goal);
         foreach (GameObject building in buildings)
         {
-            if (building.GetComponent<Collider>() != null)
+            if (building.GetComponent<Collider>() == null)
             {
-                building.GetComponent<Collider>().enabled = false;
+                //building.GetComponent<Collider>().enabled = false;
+                building.AddComponent<BoxCollider>();
             }
         }
     }

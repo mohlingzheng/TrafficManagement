@@ -5,10 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 5d501e6967909af4c908d38ec2b9899c
   - enabled: 1
-    path: Assets/Scenes/TestingScene.unity
-    guid: 9146ec2d91d4eba459bfc0341a18be1d
+    path: Assets/Scenes/ZoneSelection.unity
+    guid: 1f2e39000c90de44f8323d825dcc190f
+  - enabled: 1
+    path: Assets/Scenes/KomtarScene.unity
+    guid: ca1c1fae7f6bd8f43837d07082c1d245
   m_configObjects: {}

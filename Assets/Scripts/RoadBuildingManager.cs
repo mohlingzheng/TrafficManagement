@@ -16,7 +16,7 @@ public class RoadBuildingManager : MonoBehaviour
     public GameObject Intersection4SmallPrefab;
     public GameObject Intersection3LargePrefab;
     public GameObject Intersection4LargePrefab;
-    public GameObject Transition;
+    public GameObject TransitionPrefab;
 
     public RoadSystem roadSystem;
     public RoadSystem previewRoadSystem;
@@ -42,7 +42,7 @@ public class RoadBuildingManager : MonoBehaviour
         MakeTransparent(previewRoadSystem.transform);
     }
 
-    public RoadAnchor CreatePreviewRoad(GameObject roadSystem, GameObject roadGameObject, Vector3 position, BuildMode buildMode)
+    public RoadAnchor CreatePreviewRoad2(GameObject roadSystem, GameObject roadGameObject, Vector3 position, BuildMode buildMode)
     {
         RoadAnchor[] roadAnchors;
 
@@ -94,6 +94,106 @@ public class RoadBuildingManager : MonoBehaviour
 
         // create second road
         GameObject second_roadGO = CreateObjectAtPosition(roadSystem, RoadSmallPrefab, second_int.transform.position, Quaternion.identity);
+
+
+        Road first_roadGO_road = first_roadGO.GetComponent<Road>();
+        LinkRoadToStartEndAnchor(first_roadGO_road, road1_start, middle_first);
+
+        Road second_roadGO_road = second_roadGO.GetComponent<Road>();
+        LinkRoadToStartEndAnchor(second_roadGO_road, middle_second, road1_end);
+
+        if (buildMode == BuildMode.Preview)
+        {
+            previewRoadList.Add(first_roadGO_road);
+            previewRoadList.Add(second_roadGO_road);
+            first_roadGO_road.name = count.ToString();
+            second_roadGO_road.name = count.ToString();
+            middle_interesection.name = count.ToString();
+        }
+        else
+        {
+            roadList.Add(first_roadGO_road);
+            roadList.Add(second_roadGO_road);
+        }
+
+        first_roadGO_road.Clear();
+        first_roadGO_road.RefreshEndPoints();
+
+        second_roadGO_road.Clear();
+        second_roadGO_road.RefreshEndPoints();
+
+        return GetRoadAnchorWithoutConnection(roadAnchors);
+    }
+
+    public RoadAnchor CreatePreviewRoad(GameObject roadSystem, GameObject roadGameObject, Vector3 position, BuildMode buildMode)
+    {
+        RoadAnchor[] roadAnchors;
+
+        // get start and end Anchors
+        Road road = roadGameObject.GetComponent<Road>();
+        RoadAnchor road1_start = road.start;
+        RoadAnchor road1_end = road.end;
+        GameObject gb1_start = road1_start.transform.parent.gameObject;
+        GameObject gb1_end = road1_end.transform.parent.gameObject;
+
+
+        // create first intersection
+        GameObject first_int, second_int;
+
+        GameObject intersectionPrefab = null;
+        GameObject roadPrefab = null;
+        if (Tag.CompareTags(roadGameObject.transform, Tag.Road_Large))
+        {
+            intersectionPrefab = Intersection3LargePrefab;
+            roadPrefab = RoadLargePrefab;
+        }
+        else if (Tag.CompareTags(roadGameObject.transform, Tag.Road_Small))
+        {
+            intersectionPrefab = Intersection3SmallPrefab;
+            roadPrefab = RoadSmallPrefab;
+        }
+
+
+        if (buildMode == BuildMode.Preview)
+        {
+            first_int = CreateObjectAtPosition(roadSystem, gb1_start, gb1_start.transform.localPosition, gb1_start.transform.rotation);
+            second_int = CreateObjectAtPosition(roadSystem, gb1_end, gb1_end.transform.localPosition, gb1_end.transform.rotation);
+            first_int.name = count.ToString();
+            second_int.name = count.ToString();
+        }
+        else
+        {
+            first_int = gb1_start;
+            second_int = gb1_end;
+            road.start = null;
+            road.end = null;
+            Destroy(roadGameObject);
+        }
+
+        // create intersection in middle
+        Vector3 direction = (road1_start.transform.position - road1_end.transform.position).normalized;
+        direction = Vector3.Cross(direction, Vector3.up).normalized;
+        Quaternion rotation = Quaternion.LookRotation(direction);
+        GameObject middle_interesection = CreateObjectAtPosition(roadSystem, intersectionPrefab, position, rotation);
+
+        // get correct Anchor from first intersection
+        roadAnchors = first_int.GetComponentsInChildren<RoadAnchor>();
+        road1_start = GetClosetRoadAnchor(roadAnchors, middle_interesection);
+
+        // get correct Anchor from second intersection
+        roadAnchors = second_int.GetComponentsInChildren<RoadAnchor>();
+        road1_end = GetClosetRoadAnchor(roadAnchors, middle_interesection);
+
+        // get correct Anchor from middle intersection to first and second
+        roadAnchors = middle_interesection.GetComponentsInChildren<RoadAnchor>();
+        RoadAnchor middle_first = GetClosetRoadAnchor(roadAnchors, first_int);
+        RoadAnchor middle_second = GetClosetRoadAnchor(roadAnchors, second_int);
+
+        // create first road
+        GameObject first_roadGO = CreateObjectAtPosition(roadSystem, roadPrefab, first_int.transform.position, Quaternion.identity);
+
+        // create second road
+        GameObject second_roadGO = CreateObjectAtPosition(roadSystem, roadPrefab, second_int.transform.position, Quaternion.identity);
 
 
         Road first_roadGO_road = first_roadGO.GetComponent<Road>();
@@ -207,17 +307,100 @@ public class RoadBuildingManager : MonoBehaviour
     public void ConnectTwoIntersections(GameObject roadSystem, RoadAnchor firstRoadAnchor, RoadAnchor secondRoadAnchor, BuildMode buildMode)
     {
         ValidateRotation(firstRoadAnchor, secondRoadAnchor);
-        GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, RoadSmallPrefab, firstRoadAnchor.transform.parent.position, Quaternion.identity);
-        Road bet_intersection_roadGO_road = bet_intersection_roadGO.GetComponent<Road>();
-        LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
-        if (buildMode == BuildMode.Preview)
+        GameObject road_in_middle = null;
+        RoadAnchor anchorLarge = null;
+        RoadAnchor anchorSmall = null;
+        if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large) 
+            && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
         {
-            bet_intersection_roadGO.name = count.ToString();
-            previewRoadList.Add(bet_intersection_roadGO_road);
+            road_in_middle = RoadLargePrefab;
+        }
+        else if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small)
+            && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
+        {
+            road_in_middle = RoadSmallPrefab;
+        }
+        else if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large)
+            && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
+        {
+            road_in_middle = RoadSmallPrefab;
+            anchorLarge = firstRoadAnchor;
+            anchorSmall = secondRoadAnchor;
+        }
+        else if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small)
+            && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
+        {
+            road_in_middle = RoadSmallPrefab;
+            anchorLarge = secondRoadAnchor;
+            anchorSmall = firstRoadAnchor;
         }
         else
         {
-            roadList.Add(bet_intersection_roadGO_road);
+            anchorLarge = null;
+            anchorSmall = null;
+        }
+
+        Debug.Log(anchorLarge == null);
+
+        if (anchorLarge == null || anchorSmall == null)
+        {
+            GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, RoadSmallPrefab, firstRoadAnchor.transform.parent.position, Quaternion.identity);
+            Road bet_intersection_roadGO_road = bet_intersection_roadGO.GetComponent<Road>();
+            LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
+            if (buildMode == BuildMode.Preview)
+            {
+                bet_intersection_roadGO.name = count.ToString();
+                previewRoadList.Add(bet_intersection_roadGO_road);
+            }
+            else
+            {
+                roadList.Add(bet_intersection_roadGO_road);
+            }
+        }
+        else
+        {
+            GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, road_in_middle, anchorSmall.transform.parent.position, Quaternion.identity);
+            Road bet_intersection_roadGO_road = bet_intersection_roadGO.GetComponent<Road>();
+
+            GameObject bet_transition_raodGO = CreateObjectAtPosition(roadSystem, RoadLargePrefab, anchorLarge.transform.parent.position, Quaternion.identity);
+            Road bet_transition_roadGO_road = bet_transition_raodGO.GetComponent<Road>();
+
+            GameObject transition = CreateObjectAtPosition(roadSystem, TransitionPrefab, anchorLarge.transform.parent.position + anchorLarge.transform.forward * 50f, Quaternion.identity);
+
+            Vector3 TransitionDirection = anchorLarge.transform.localScale - transition.transform.position;
+
+            transition.transform.LookAt(TransitionDirection);
+
+            RoadAnchor[] roadAnchors = transition.GetComponentsInChildren<RoadAnchor>();
+            RoadAnchor transition_4;
+            RoadAnchor transition_2;
+            if (roadAnchors[0].transform.name == "Anchor 4 Lanes")
+            {
+                transition_4 = roadAnchors[0];
+                transition_2 = roadAnchors[1];
+            }
+            else
+            {
+                transition_2 = roadAnchors[0];
+                transition_4 = roadAnchors[1];
+            }
+
+            LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, transition_2, anchorSmall);
+            LinkRoadToStartEndAnchor(bet_transition_roadGO_road, anchorLarge, transition_4);
+
+            if (buildMode == BuildMode.Preview)
+            {
+                bet_transition_raodGO.name = count.ToString();
+                bet_intersection_roadGO.name = count.ToString();
+                transition.name = count.ToString();
+                previewRoadList.Add(bet_intersection_roadGO_road);
+                previewRoadList.Add(bet_transition_roadGO_road);
+            }
+            else
+            {
+                roadList.Add(bet_intersection_roadGO_road);
+                roadList.Add(bet_transition_roadGO_road);
+            }
         }
     }
 
@@ -227,7 +410,7 @@ public class RoadBuildingManager : MonoBehaviour
         Quaternion rotation;
         float angle;
 
-        if (!firstRoadAnchor.transform.parent.CompareTag("Intersection4"))
+        if (!Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_4_Small, Tag.Intersection_4_Large))
         {
             rotation = Quaternion.LookRotation(direction);
             angle = Quaternion.Angle(rotation, firstRoadAnchor.transform.rotation);
@@ -236,7 +419,7 @@ public class RoadBuildingManager : MonoBehaviour
                 ExchangeRoadConnected(firstRoadAnchor);
         }
 
-        if (!secondRoadAnchor.transform.parent.CompareTag("Intersection4"))
+        if (!Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_4_Small, Tag.Intersection_4_Large))
         {
             rotation = Quaternion.LookRotation(-direction);
             angle = Quaternion.Angle(rotation, secondRoadAnchor.transform.rotation);
@@ -342,11 +525,13 @@ public class RoadBuildingManager : MonoBehaviour
     {
         if (roadList.Count > 0)
         {
+            Debug.Log("reset");
             roadSystem.ConstructGraph();
             foreach (var road in roadList)
             {
                 road.OnCurveChanged(true);
             }
+            roadSystem.RebuildAllRoads();
             roadList.Clear();
         }
 
