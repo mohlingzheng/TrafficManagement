@@ -19,6 +19,10 @@ public class CameraController : MonoBehaviour
     public Quaternion newRotation;
     public Vector3 newZoom;
 
+    [Header("Screen Size")]
+    float length = 1500f;
+    float width = 711f;
+
     void Start()
     {
         newPosition = transform.position;
@@ -56,9 +60,9 @@ public class CameraController : MonoBehaviour
 
     Vector3 ClampPositionVector(Vector3 value)
     {
-        value.x = Mathf.Clamp(value.x, 0f, 1500f);
+        value.x = Mathf.Clamp(value.x, 0f, length);
         value.y = Mathf.Clamp(value.y, 5f, 5f);
-        value.z = Mathf.Clamp(value.z, 0f, 711f);
+        value.z = Mathf.Clamp(value.z, 0f, width);
         return value;
     }
 

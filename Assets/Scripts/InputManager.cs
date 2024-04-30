@@ -13,8 +13,6 @@ using UnityEngine.UI;
 public class InputManager : MonoBehaviour
 {
     public Camera mainCamera;
-    public Button pauseButton;
-    public Button resumeButton;
     public Image pointer;
     public RoadBuildingManager roadBuildingManager;
     public RoadSystem roadSystem;
@@ -53,31 +51,30 @@ public class InputManager : MonoBehaviour
 
     void Start()
     {
-        //ChangeUIWithInputMode();
+        ChangeUIWithInputMode();
         if (EventSystem.current == null)
         {
             Debug.LogError("No EventSystem found in the scene.");
             return;
         }
-        EventSystem.current.SetSelectedGameObject(SelectButton.gameObject);
     }
 
-    void FixedUpdate()
+    void Update()
     {
         ButtonInteraction();
-        if (!selection)
-        {
-            selection = GameObject.FindGameObjectWithTag(Tag.Vehicle).transform;
-        }
+        //if (!selection)
+        //{
+        //    selection = GameObject.FindGameObjectWithTag(Tag.Vehicle).transform;
+        //}
     }
 
-    public void YButtonInteractButton()
-    {
-        if (pauseButton.IsActive())
-            ExecuteEvents.Execute(pauseButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-        else
-            ExecuteEvents.Execute(resumeButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-    }
+    //public void YButtonInteractButton()
+    //{
+    //    if (pauseButton.IsActive())
+    //        ExecuteEvents.Execute(pauseButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+    //    else
+    //        ExecuteEvents.Execute(resumeButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
+    //}
 
     void ButtonInteraction()
     {
@@ -94,8 +91,42 @@ public class InputManager : MonoBehaviour
         {
             GetInputForPreviewBuilding();
         }
+        else if (inputMode == InputMode.Remove)
+        {
+            GetInputForRemoveRoad();
+        }
 
         DeveloperInteraction();
+    }
+
+    private void GetInputForRemoveRoad()
+    {
+        if (Input.GetButtonDown("A") && confirm == false)
+        {
+            if (firstPoint == Vector3.zero && pointedGameObject.transform.parent == roadSystem.gameObject.transform)
+            {
+                if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
+                {
+                    Debug.Log("Selected Road");
+                    firstPoint = pointedPosition;
+                    firstSelectedGameObject = pointedGameObject;
+                    roadBuildingManager.CreatePreviewRemovedRoad(previewRoadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Preview);
+                }
+                else
+                {
+                    Debug.Log("Do nothing");
+                }
+            }
+        }
+        else if (Input.GetButtonDown("A") && confirm == true)
+        {
+
+        }
+        else if (Input.GetButtonDown("B"))
+        {
+            DestroyAllPreviewObject();
+            ResetRoadBuilding();
+        }
     }
 
     private void DeveloperInteraction()
@@ -290,7 +321,7 @@ public class InputManager : MonoBehaviour
         {
             if (firstPoint == Vector3.zero && pointedGameObject.transform.parent == roadSystem.gameObject.transform)
             {
-                if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small))
+                if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
                 {
                     Debug.Log("first road");
                     firstPoint = pointedPosition;
@@ -299,25 +330,7 @@ public class InputManager : MonoBehaviour
                     SetUIOnRoadPreview(1);
                     roadBuildingManager.IncreaseCount();
                 }
-                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Large))
-                {
-                    Debug.Log("first road");
-                    firstPoint = pointedPosition;
-                    firstSelectedGameObject = pointedGameObject;
-                    firstAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, firstPoint, BuildMode.Preview);
-                    SetUIOnRoadPreview(1);
-                    roadBuildingManager.IncreaseCount();
-                }
-                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
-                {
-                    Debug.Log("first intersection");
-                    firstPoint = pointedPosition;
-                    firstSelectedGameObject = pointedGameObject;
-                    firstAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Preview);
-                    SetUIOnRoadPreview(1);
-                    roadBuildingManager.IncreaseCount();
-                }
-                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Large))
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_3_Large))
                 {
                     Debug.Log("first intersection");
                     firstPoint = pointedPosition;
@@ -337,7 +350,7 @@ public class InputManager : MonoBehaviour
                 {
                     Debug.Log("Cannot select same road or same intersection");
                 }
-                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small))
+                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
                 {
                     Debug.Log("second road");
                     secondPoint = pointedPosition;
@@ -345,23 +358,7 @@ public class InputManager : MonoBehaviour
                     secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
                     SetUIOnRoadPreview(2);
                 }
-                else if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Large))
-                {
-                    Debug.Log("second road");
-                    secondPoint = pointedPosition;
-                    secondSelectedGameObject = pointedGameObject;
-                    secondAnchor = roadBuildingManager.CreatePreviewRoad(previewRoadSystem.gameObject, pointedGameObject, secondPoint, BuildMode.Preview);
-                    SetUIOnRoadPreview(2);
-                }
-                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small))
-                {
-                    Debug.Log("second intersection");
-                    secondPoint = pointedPosition;
-                    secondSelectedGameObject = pointedGameObject;
-                    secondAnchor = roadBuildingManager.CreatePreviewIntersection(previewRoadSystem.gameObject, pointedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Preview);
-                    SetUIOnRoadPreview(2);
-                }
-                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Large))
+                else if (Tag.CompareTags(pointedGameObject.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_3_Large))
                 {
                     Debug.Log("second intersection");
                     secondPoint = pointedPosition;
@@ -497,17 +494,31 @@ public class InputManager : MonoBehaviour
     {
         if (inputMode == InputMode.Default)
         {
-            buttonPanel.transform.GetChild(0).GetComponent<Image>().color = Color.green;
-            buttonPanel.transform.GetChild(1).GetComponent<Image>().color = Color.white;
+            ChangeToSelectedColor(buttonPanel.transform.GetChild(0).gameObject);
+            ChangeToNormalColor(buttonPanel.transform.GetChild(1).gameObject);
+            ChangeToNormalColor(buttonPanel.transform.GetChild(2).gameObject);
         }
         else if (inputMode == InputMode.Build)
         {
-            buttonPanel.transform.GetChild(0).GetComponent<Image>().color = Color.white;
-            buttonPanel.transform.GetChild(1).GetComponent<Image>().color = Color.green;
+            ChangeToNormalColor(buttonPanel.transform.GetChild(0).gameObject);
+            ChangeToSelectedColor(buttonPanel.transform.GetChild(1).gameObject);
+            ChangeToNormalColor(buttonPanel.transform.GetChild(2).gameObject);
+        }
+        else if (inputMode == InputMode.Remove)
+        {
+            ChangeToNormalColor(buttonPanel.transform.GetChild(0).gameObject);
+            ChangeToNormalColor(buttonPanel.transform.GetChild(1).gameObject);
+            ChangeToSelectedColor(buttonPanel.transform.GetChild(2).gameObject);
         }
         else
         {
             Debug.Log("Wrong InputMode");
+        }
+
+        if (inputMode != InputMode.Build)
+        {
+            DestroyAllPreviewObject();
+            ResetRoadBuilding();
         }
     }
 
@@ -518,7 +529,7 @@ public class InputManager : MonoBehaviour
         if (Input.GetButtonDown("LB"))
         {
             currentMode--;
-            currentMode = Mathf.Clamp(currentMode, 0, 1);
+            currentMode = Mathf.Clamp(currentMode, 0, size-1);
             inputMode = (InputMode)currentMode;
             Debug.Log("Change InputMode to " + inputMode);
             ChangeUIWithInputMode();
@@ -527,7 +538,7 @@ public class InputManager : MonoBehaviour
         if (Input.GetButtonDown("RB"))
         {
             currentMode++;
-            currentMode = Mathf.Clamp(currentMode, 0, 1);
+            currentMode = Mathf.Clamp(currentMode, 0, size-1);
             inputMode = (InputMode)currentMode;
             Debug.Log("Change InputMode to " + inputMode);
             ChangeUIWithInputMode();
@@ -557,5 +568,16 @@ public class InputManager : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        roadBuildingManager.ResetCount();
+    }
+
+    private void ChangeToNormalColor(GameObject button)
+    {
+        button.GetComponent<Image>().color = button.GetComponent<Button>().colors.normalColor;
+    }
+
+    private void ChangeToSelectedColor(GameObject button)
+    {
+        button.GetComponent<Image>().color = button.GetComponent<Button>().colors.selectedColor;
     }
 }

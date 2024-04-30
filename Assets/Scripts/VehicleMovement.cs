@@ -386,10 +386,10 @@ public class VehicleMovement : MonoBehaviour
         Debug.DrawRay(raycastPosition, transform.forward * rayDistance, UnityEngine.Color.yellow);
         if (Physics.Raycast(raycastPosition, transform.forward, out hit, rayDistance))
         {
-            if (hit.collider.name == goalObject.name)
-            {
-                Debug.Log("obs");
-            }
+            //if (hit.collider.name == goalObject.name)
+            //{
+            //    Debug.Log("obs");
+            //}
             return hit;
         }
         else

@@ -14,6 +14,7 @@ public enum InputMode
 {
     Default = 0,
     Build = 1,
+    Remove = 2,
 }
 
 public enum BuildMode
@@ -34,6 +35,8 @@ public static class Tag
     public static readonly string Road_Large = "Road_Large";
     public static readonly string Queue = "Queue";
     public static readonly string Transition = "Transition";
+    public static readonly string End_Small = "End_Small";
+    public static readonly string End_Large = "End_Large";
 
     public static bool CompareTags(Transform target, params string[] tags)
     {
