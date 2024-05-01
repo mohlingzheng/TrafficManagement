@@ -107,10 +107,11 @@ public class InputManager : MonoBehaviour
             {
                 if (Tag.CompareTags(pointedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
                 {
-                    Debug.Log("Selected Road");
+                    Debug.Log("Remove Road, Correct Selection of Road");
                     firstPoint = pointedPosition;
                     firstSelectedGameObject = pointedGameObject;
                     roadBuildingManager.CreatePreviewRemovedRoad(previewRoadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Preview);
+                    confirm = true;
                 }
                 else
                 {
@@ -120,7 +121,9 @@ public class InputManager : MonoBehaviour
         }
         else if (Input.GetButtonDown("A") && confirm == true)
         {
-
+            Debug.Log("Implement Road Removing");
+            roadBuildingManager.CreatePreviewRemovedRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
+            ResetUponRoadModification();
         }
         else if (Input.GetButtonDown("B"))
         {
@@ -395,12 +398,7 @@ public class InputManager : MonoBehaviour
                 secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
 
             roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
-            roadSystem.ConstructGraph();
-            ResetRoadBuilding();
-            DestroyAllPreviewObject();
-            intersectionManager.GetLatestIntersection();
-            PathFindingRecalculate();
-            SetUIOnRoadPreview(5);
+            ResetUponRoadModification();
         }
         else if (Input.GetButtonDown("B"))
         {
@@ -515,7 +513,7 @@ public class InputManager : MonoBehaviour
             Debug.Log("Wrong InputMode");
         }
 
-        if (inputMode != InputMode.Build)
+        if (inputMode != InputMode.Build || inputMode != InputMode.Remove)
         {
             DestroyAllPreviewObject();
             ResetRoadBuilding();
@@ -531,7 +529,6 @@ public class InputManager : MonoBehaviour
             currentMode--;
             currentMode = Mathf.Clamp(currentMode, 0, size-1);
             inputMode = (InputMode)currentMode;
-            Debug.Log("Change InputMode to " + inputMode);
             ChangeUIWithInputMode();
         }
 
@@ -540,7 +537,6 @@ public class InputManager : MonoBehaviour
             currentMode++;
             currentMode = Mathf.Clamp(currentMode, 0, size-1);
             inputMode = (InputMode)currentMode;
-            Debug.Log("Change InputMode to " + inputMode);
             ChangeUIWithInputMode();
         }
 
@@ -579,5 +575,15 @@ public class InputManager : MonoBehaviour
     private void ChangeToSelectedColor(GameObject button)
     {
         button.GetComponent<Image>().color = button.GetComponent<Button>().colors.selectedColor;
+    }
+
+    private void ResetUponRoadModification()
+    {
+        roadSystem.ConstructGraph();
+        ResetRoadBuilding();
+        DestroyAllPreviewObject();
+        intersectionManager.GetLatestIntersection();
+        PathFindingRecalculate();
+        SetUIOnRoadPreview(5);
     }
 }
