@@ -81,3 +81,9 @@ public static class OnLanes
         }
     }
 }
+
+public enum GraphMode
+{
+    Original = 0,
+    Modified = 1,
+}

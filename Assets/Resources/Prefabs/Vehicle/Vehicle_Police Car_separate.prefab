@@ -444,7 +444,7 @@ Transform:
   m_GameObject: {fileID: 100010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 240.4, y: 0, z: 170.9}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -501,6 +501,8 @@ MonoBehaviour:
   stopDueToTraffic: 0
   laneJustChanged: 0
   laneChangingClock: 0
+  timeWaited: 0
+  timeTrackingManager: {fileID: 0}
   rayDistance: 10
   rayHitObject: {fileID: 0}
   distanceDetect: 0

@@ -56,23 +56,12 @@ public class RoadBuildingManager : MonoBehaviour
         // create first intersection
         GameObject first_int, second_int;
 
-        GameObject intersectionPrefab = null;
-        GameObject roadPrefab = null;
-        if (Tag.CompareTags(roadGameObject.transform, Tag.Road_Large))
-        {
-            intersectionPrefab = Intersection3LargePrefab;
-            roadPrefab = RoadLargePrefab;
-        }
-        else if (Tag.CompareTags(roadGameObject.transform, Tag.Road_Small))
-        {
-            intersectionPrefab = Intersection3SmallPrefab;
-            roadPrefab = RoadSmallPrefab;
-        }
+        GameObject intersectionPrefab = Tag.CompareTags(roadGameObject.transform, Tag.Road_Large) ? Intersection3LargePrefab : Intersection3SmallPrefab;
 
         if (buildMode == BuildMode.Preview)
         {
-            first_int = CreateObjectAtPosition(roadSystem, gb1_start, gb1_start.transform.localPosition, gb1_start.transform.rotation);
-            second_int = CreateObjectAtPosition(roadSystem, gb1_end, gb1_end.transform.localPosition, gb1_end.transform.rotation);
+            first_int = CreateObjectAtPosition(roadSystem, GetPurePrefab(gb1_start), gb1_start.transform.localPosition, gb1_start.transform.rotation);
+            second_int = CreateObjectAtPosition(roadSystem, GetPurePrefab(gb1_end), gb1_end.transform.localPosition, gb1_end.transform.rotation);
             first_int.name = count.ToString();
             second_int.name = count.ToString();
         }
@@ -93,11 +82,11 @@ public class RoadBuildingManager : MonoBehaviour
 
         // get correct Anchor from first intersection
         roadAnchors = first_int.GetComponentsInChildren<RoadAnchor>();
-        road1_start = GetClosetRoadAnchor(roadAnchors, middle_interesection);
+        road1_start = GetClosetRoadAnchor(roadAnchors, road1_start.gameObject);
 
         // get correct Anchor from second intersection
         roadAnchors = second_int.GetComponentsInChildren<RoadAnchor>();
-        road1_end = GetClosetRoadAnchor(roadAnchors, middle_interesection);
+        road1_end = GetClosetRoadAnchor(roadAnchors, road1_end.gameObject);
 
         // get correct Anchor from middle intersection to first and second
         roadAnchors = middle_interesection.GetComponentsInChildren<RoadAnchor>();
@@ -105,10 +94,10 @@ public class RoadBuildingManager : MonoBehaviour
         RoadAnchor middle_second = GetClosetRoadAnchor(roadAnchors, second_int);
 
         // create first road
-        GameObject first_roadGO = CreateObjectAtPosition(roadSystem, roadPrefab, first_int.transform.position, Quaternion.identity);
+        GameObject first_roadGO = CreateObjectAtPosition(roadSystem, GetPurePrefab(roadGameObject), first_int.transform.position, Quaternion.identity);
 
         // create second road
-        GameObject second_roadGO = CreateObjectAtPosition(roadSystem, roadPrefab, second_int.transform.position, Quaternion.identity);
+        GameObject second_roadGO = CreateObjectAtPosition(roadSystem, GetPurePrefab(roadGameObject), second_int.transform.position, Quaternion.identity);
 
         Road first_roadGO_road = first_roadGO.GetComponent<Road>();
         LinkRoadToStartEndAnchor(first_roadGO_road, road1_start, middle_first);

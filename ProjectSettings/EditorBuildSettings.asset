@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/KomtarScene.unity
     guid: ca1c1fae7f6bd8f43837d07082c1d245
+  - enabled: 1
+    path: Assets/Scenes/Conclusion.unity
+    guid: 4a177a07fc30a314c98d4fa8965ffc86
   m_configObjects: {}

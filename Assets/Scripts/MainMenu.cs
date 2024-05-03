@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class MainMenu : MonoBehaviour
 {
     public Button StartButton;
+    Scene currentScene;
     private void Start()
     {
         if (EventSystem.current == null)
@@ -15,7 +16,16 @@ public class MainMenu : MonoBehaviour
             Debug.LogError("No EventSystem found in the scene.");
             return;
         }
-        EventSystem.current.SetSelectedGameObject(StartButton.gameObject);
+        currentScene = SceneManager.GetActiveScene();
+        if (currentScene.name == "MainMenu" || currentScene.name == "ZoneSelection" || currentScene.name == "Conclusion")
+        {
+            EventSystem.current.SetSelectedGameObject(StartButton.gameObject);
+        }
+    }
+
+    public void StartMainMenuScene()
+    {
+        SceneManager.LoadScene("Scenes/MainMenu");
     }
 
     public void StartSimulation()
@@ -26,6 +36,11 @@ public class MainMenu : MonoBehaviour
     public void StartKomtarScene()
     {
         SceneManager.LoadScene("Scenes/KomtarScene");
+    }
+
+    public void StartConclusionScene()
+    {
+        SceneManager.LoadScene("Scenes/Conclusion");
     }
 
     public void QuitSimulation()

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5069528466591191574}
   - component: {fileID: 5069528466591191573}
   - component: {fileID: 5069528466591191572}
+  - component: {fileID: 6103583402475387900}
   m_Layer: 0
   m_Name: Road 4-Lane
   m_TagString: Road_Large
@@ -159,3 +160,15 @@ MonoBehaviour:
     uvOffset: {x: 0, y: 1}
   autoGenerate: 1
   SourceMesh: {fileID: -5754084199372789682, guid: fac25352ec8ea32478d961f39f74af2d, type: 3}
+--- !u!114 &6103583402475387900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5069528466591191570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f009f005d8440c04684f5803f123f856, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

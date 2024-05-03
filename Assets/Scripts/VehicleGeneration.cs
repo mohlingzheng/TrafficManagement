@@ -65,7 +65,7 @@ public class VehicleGeneration : MonoBehaviour
 
     private void GenerateSpecificVehicle()
     {
-        Vector3 spawnPosition = new Vector3(226.8f, 0f, 28.5f);
+        Vector3 spawnPosition = new Vector3(303.6f, 0f, 11.6f);
         if (!specificVehicle)
         {
             specificVehicle = Instantiate(VehiclePrefabs[0], spawnPosition, Quaternion.identity);

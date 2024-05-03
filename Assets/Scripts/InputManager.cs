@@ -520,6 +520,13 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    public void RemoveInputModeChoice()
+    {
+        ChangeToNormalColor(buttonPanel.transform.GetChild(0).gameObject);
+        ChangeToNormalColor(buttonPanel.transform.GetChild(1).gameObject);
+        ChangeToNormalColor(buttonPanel.transform.GetChild(2).gameObject);
+    }
+
     private void HandleInputModeChange()
     {
         int size = Enum.GetValues(typeof(InputMode)).Length;

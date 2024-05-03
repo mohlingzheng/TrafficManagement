@@ -40,6 +40,13 @@ public class VehicleMovement : MonoBehaviour
     public bool laneJustChanged = false;
     public float laneChangingClock = 0f;
 
+    [Header("Analysis")]
+    public double timeWaited = 0f;
+    public TimeTrackingManager timeTrackingManager;
+
+    [Header("Weighted Heuristic")]
+    GameObject previousRoad = null;
+
     [Header("Others")]
     public float rayDistance = 10f;
     const float MaximumRayDistance = 10f;
@@ -60,9 +67,10 @@ public class VehicleMovement : MonoBehaviour
         navigator = GetComponent<RoadSystemNavigator>();
         navigator.currentRoadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
+        timeTrackingManager = FindAnyObjectByType<TimeTrackingManager>();
         desiredSpeed = Random.Range(10, 20);
         if (transform.name == "Specific Vehicle")
-            desiredSpeed = 10f;
+            desiredSpeed = 15f;
         SetRandomGoal();
         StartCoroutine(SetMovePointLoop());
     }
@@ -72,7 +80,42 @@ public class VehicleMovement : MonoBehaviour
         RemoveMovePointsWith90Degree();
         DynamicSpeedLogic();
         LaneChangingLogic();
-        RemoveGameObject();
+        TimeTracking();
+        RemoveOnUnexpectedPosition();
+        UpdateMovePointReady();
+    }
+
+    private void UpdateMovePointReady()
+    {
+        movePointReady = navigator.enabled == false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (movePoints.Count <= 3 && !movePointReady)
+            return;
+        for (int i = 1; i < movePoints.Count - 1; i++)
+        {
+            float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
+            Vector3 forwardDirection = (movePoints[i + 1].position - movePoints[i].position).normalized;
+            Vector3 testdirection = Vector3.Cross(Vector3.up, forwardDirection).normalized;
+            Vector3 target = movePoints[i].position + testdirection * distanceFromCentre;
+            if (ValueNearToZero(dotResult))
+            {
+                Gizmos.DrawSphere(target, 2f);
+            }
+            else
+            {
+                Gizmos.DrawSphere(target, 0.5f);
+            }
+        }
+    }
+
+
+    private void TimeTracking()
+    {
+        if (ValueNearToZero(currentSpeed))
+            timeWaited += Time.deltaTime;
     }
 
     public void LaneChangingLogic()
@@ -127,14 +170,21 @@ public class VehicleMovement : MonoBehaviour
         position.y += 0.5f;
         if (Physics.Raycast(position, Vector3.down, out hit, 2f))
         {
-            if (Tag.CompareTags(hit.collider.transform, Tag.Road_Small, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
+            if (Tag.CompareTags(hit.collider.transform, Tag.Road_Small))
             {
                 currentRoadType = OnLanes.Small;
+                UpdateRoadTrafficDensityCount(hit.collider.transform.gameObject);
+
             }
             else if (Tag.CompareTags(hit.collider.transform, Tag.Road_Large))
             {
                 currentRoadType = OnLanes.Large;
+                UpdateRoadTrafficDensityCount(hit.collider.transform.gameObject);
             }
+            else if (Tag.CompareTags(hit.collider.transform, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
+                currentRoadType = OnLanes.Small;
+            else if (Tag.CompareTags(hit.collider.transform, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
+                currentRoadType = OnLanes.Large;
             else if (Tag.CompareTags(hit.collider.transform, Tag.Transition))
             {
                 if (currentRoadType == OnLanes.Small)
@@ -152,15 +202,6 @@ public class VehicleMovement : MonoBehaviour
             }
         }
     }
-
-    //void OnDrawGizmos()
-    //{
-    //    for (int i = 1; i < movePoints.Count - 1; i++)
-    //    {
-    //        Gizmos.color = UnityEngine.Color.blue;
-    //        Gizmos.DrawSphere(movePoints[i].position, 1f);
-    //    }
-    //}
 
     private void ChangeLane()
     {
@@ -339,7 +380,7 @@ public class VehicleMovement : MonoBehaviour
             if (distance < Mathf.Abs(distanceFromCentre) + 0.5f)
                 movePoints.RemoveAt(0);
 
-            if (movingDirection != Vector3.zero && !NearToZero())
+            if (movingDirection != Vector3.zero && !ValueNearToZero(currentSpeed))
             {
                 Quaternion rotation = Quaternion.LookRotation(movingDirection);
                 rotation.x = 0f;
@@ -646,9 +687,9 @@ public class VehicleMovement : MonoBehaviour
         return hit.collider.gameObject.layer == LayerMask.NameToLayer(layer);
     }
 
-    public bool NearToZero()
+    private bool ValueNearToZero(float value)
     {
-        if (currentSpeed < 0.0001f && currentSpeed > -0.00001f)
+        if (value < 0.001f && value > - 0.001f)
             return true;
         return false;
     }
@@ -694,14 +735,26 @@ public class VehicleMovement : MonoBehaviour
 
     public void RemoveMovePointsWith90Degree()
     {
-        if (movePoints.Count <= 3 && !movePointReady)
+        if (movePoints.Count <= 3 || !movePointReady)
             return;
-        for (int i = 1; i < movePoints.Count - 1; i++)
+        for (int i = 1; i < movePoints.Count - 3; i++)
         {
             float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
-            if (dotResult == 0) 
+            if (ValueNearToZero(dotResult))
             {
+                movePoints.RemoveAt(i + 5);
+                movePoints.RemoveAt(i + 4);
+                movePoints.RemoveAt(i + 3);
+                movePoints.RemoveAt(i + 2);
+                movePoints.RemoveAt(i + 1);
+
                 movePoints.RemoveAt(i);
+
+                movePoints.RemoveAt(i - 1);
+                movePoints.RemoveAt(i - 2);
+                movePoints.RemoveAt(i - 3);
+                movePoints.RemoveAt(i - 4);
+                movePoints.RemoveAt(i - 5);
             }
         }
     }
@@ -716,9 +769,9 @@ public class VehicleMovement : MonoBehaviour
     public void SetRandomGoal()
     {
         GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
-        if (gameObject.name == "Specific Vehicle 2" || gameObject.name == "Specific Vehicle 2")
+        if (gameObject.name == "Specific Vehicle" || gameObject.name == "Specific Vehicle 2")
         {
-            goalObject = GameObject.Find("Pejabat Pos KOMTAR");
+            goalObject = GameObject.Find("NBL Money Transfer Sdn Bhd");
         }
         else if (goalObjects.Length > 0)
         {
@@ -728,19 +781,41 @@ public class VehicleMovement : MonoBehaviour
         navigator.Goal = goalObject.transform.position;
     }
 
-    public void RecalculatePath()
+    private void OnCollisionEnter(Collision collision)
     {
-        navigator.CalculateWayPointsSync();
-        movePointReady = false;
+        if (collision.gameObject == goalObject)
+        {
+            UpdateTimeAndDestroy();
+        }
     }
 
-    private void RemoveGameObject()
+    private void RemoveOnUnexpectedPosition()
     {
-        Vector3 center = new Vector3(500f, 0f, 500f);
-        float distance = Vector3.Distance(center, gameObject.transform.position);
-        if (distance > 1000f)
+        if (transform.position.y < -10f)
         {
-            Destroy(gameObject);
+            UpdateTimeAndDestroy();
+        }
+    }
+
+    private void UpdateTimeAndDestroy()
+    {
+        timeTrackingManager.currentTotalTime += timeWaited;
+        vehicleGeneration.ReduceVehicleCount(1);
+        Destroy(gameObject);
+    }
+
+    private void UpdateRoadTrafficDensityCount(GameObject currentRoad)
+    {
+        if (previousRoad == null)
+        {
+            previousRoad = currentRoad;
+            previousRoad.GetComponent<RoadTrafficDensity>().IncreaseCount();
+        }
+        else if (currentRoad != previousRoad)
+        {
+            previousRoad.GetComponent<RoadTrafficDensity>().DecreaseCount();
+            currentRoad.GetComponent<RoadTrafficDensity>().IncreaseCount();
+            previousRoad = currentRoad;
         }
     }
 
