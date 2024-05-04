@@ -19,6 +19,8 @@ public class GraphManager : MonoBehaviour
     public float heightMultiplier = 10f;
     public float Height = 30 - (-110);
     int numberOfGroup = 10;
+    public GameObject CoordinatePrefab;
+    public double SumWaitingTime;
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
@@ -37,8 +39,11 @@ public class GraphManager : MonoBehaviour
         }
         ProcessFloatList();
         SetupGraphDimension();
+        SetTotalWaitingTime();
         SetupAxis();
         DrawFinalTimes();
+        SetCoordinateLabel();
+        DisplayTotalWaitingTime();
     }
 
     void Update()
@@ -50,12 +55,33 @@ public class GraphManager : MonoBehaviour
     {
         lineRenderer.positionCount = numberOfGroup;
         Vector3 currentVector = baseOrigin;
-        lineRenderer.SetPosition(0, currentVector);
-        for (int i = 1; i < numberOfGroup; i++)
+        //lineRenderer.SetPosition(0, currentVector);
+        //for (int i = 1; i < numberOfGroup; i++)
+        //{
+        //    currentVector.x = baseOrigin.x + widthMultiplier * i;
+        //    currentVector.y = baseOrigin.y + (float)finalTimes[i];
+        //    lineRenderer.SetPosition(i, currentVector);
+        //}
+
+        for (int i = 0; i < numberOfGroup; i++)
         {
             currentVector.x = baseOrigin.x + widthMultiplier * i;
             currentVector.y = baseOrigin.y + (float)finalTimes[i];
             lineRenderer.SetPosition(i, currentVector);
+        }
+    }
+
+    private void DisplayTotalWaitingTime()
+    {
+        Transform totalTimes = transform.Find("WaitingTime");
+        totalTimes.GetComponent<TextMeshProUGUI>().text = SumWaitingTime.ToString("F2") + " Seconds";
+    }
+
+    private void SetTotalWaitingTime()
+    {
+        for (int i = 0; i < finalTimes.Count; i++)
+        {
+            SumWaitingTime += finalTimes[i];
         }
     }
 
@@ -64,11 +90,37 @@ public class GraphManager : MonoBehaviour
         Transform x_axis = transform.Find("X-axis");
         LineRenderer x_renderer = x_axis.GetComponent<LineRenderer>();
         x_renderer.positionCount = 2;
-        x_renderer.SetPosition(0, baseOrigin);
+        Vector3 position = baseOrigin;
+        position.x -= 3f;
+        x_renderer.SetPosition(0, position);
         Vector3 second = baseOrigin;
         second.x += 270;
         x_renderer.SetPosition(1, second);
 
+        Transform y_axis = transform.Find("Y-axis");
+        LineRenderer y_renderer = y_axis.GetComponent<LineRenderer>();
+        y_renderer.positionCount = 2;
+        position = baseOrigin;
+        position.y -= 3f;
+        y_renderer.SetPosition(0, position);
+        second = baseOrigin;
+        second.y += 140;
+        y_renderer.SetPosition(1, second);
+
+    }
+
+    private void SetCoordinateLabel()
+    {
+        Transform coordinateLabel = transform.Find("CoordinateLabel");
+        for (int i = 0; i < lineRenderer.positionCount; i++)
+        {
+            GameObject coordinate = Instantiate(CoordinatePrefab, coordinateLabel);
+            coordinate.name = i.ToString();
+            Vector3 position = lineRenderer.GetPosition(i);
+            position.y += 3f;
+            coordinate.transform.position = position;
+            coordinate.GetComponent<TextMeshProUGUI>().text = finalTimes[i].ToString("F2");
+        }
     }
 
     private void ProcessFloatList()
@@ -93,7 +145,7 @@ public class GraphManager : MonoBehaviour
             finalTimes.Add(processedTimes[i] / highest * Height);
         }
         GameObject maximumGB = transform.Find("Maximum").gameObject;
-        maximumGB.GetComponent<TextMeshProUGUI>().text = highest.ToString();
+        //maximumGB.GetComponent<TextMeshProUGUI>().text = highest.ToString();
     }
 
     private double GetHighestFromList(List<double> list)
