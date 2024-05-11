@@ -42,14 +42,17 @@ public class GraphManager : MonoBehaviour
         baseOrigin = new Vector3(-310, -140, 386);
         Width = 420f;
         Height = 170f;
-        //List<double> times = TimeTrackingManager.TimeWaitedPeriod;
         for (int i = 0; i < 103; i++)
         {
             originalTimes.Add(UnityEngine.Random.Range(1, 15));
         }
-        for (int i = 0; i < 103; i++)
+        modifiedTimes = TimeTrackingManager.TimeWaitedPeriod;
+        if (modifiedTimes.Count == 0)
         {
-            modifiedTimes.Add(UnityEngine.Random.Range(1, 15));
+            for (int i = 0; i < 103; i++)
+            {
+                modifiedTimes.Add(UnityEngine.Random.Range(1, 15));
+            }
         }
 
         SetupAxis();
@@ -195,7 +198,7 @@ public class GraphManager : MonoBehaviour
         {
             GameObject coordinate = Instantiate(CoordinatePrefab, coordinateLabel);
             coordinate.name = i.ToString();
-            coordinate.GetComponent<TextMeshProUGUI>().color = lineRenderer.material.color;
+            coordinate.GetComponent<TextMeshProUGUI>().color = lineRenderer.startColor;
             bool Upper;
             if (i == 0)
             {
@@ -215,7 +218,7 @@ public class GraphManager : MonoBehaviour
             else
                 position.y -= CoordinateMinorDisplacement;
             coordinate.transform.position = position;
-            coordinate.GetComponent<TextMeshProUGUI>().text = timeList[i].ToString("F2");
+            coordinate.GetComponent<TextMeshProUGUI>().text = timeList[i].ToString("F0");
         }
     }
 

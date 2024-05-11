@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1523091806577088016, guid: c59d778336a0d4f4fbf7f92086d9c551, type: 3}
       propertyPath: m_Name
-      value: Intersection End Variant 1
+      value: Intersection End Large
       objectReference: {fileID: 0}
     - target: {fileID: 1523091806577088016, guid: c59d778336a0d4f4fbf7f92086d9c551, type: 3}
       propertyPath: m_TagString
@@ -71,5 +71,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1523091806577088016, guid: c59d778336a0d4f4fbf7f92086d9c551, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5203943573642067083}
   m_SourcePrefab: {fileID: 100100000, guid: c59d778336a0d4f4fbf7f92086d9c551, type: 3}
+--- !u!1 &684992295307260226 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1523091806577088016, guid: c59d778336a0d4f4fbf7f92086d9c551, type: 3}
+  m_PrefabInstance: {fileID: 2063369018445588306}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5203943573642067083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684992295307260226}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []

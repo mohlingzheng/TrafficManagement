@@ -14,6 +14,7 @@ public class KomtarSceneManager : MonoBehaviour
     public InputManager inputManager;
     public CameraController cameraController;
     public TimeTrackingManager timeTrackingManager;
+    public float gameTime = 300f;
     void Start()
     {
         currentScene = SceneManager.GetActiveScene();
@@ -26,7 +27,7 @@ public class KomtarSceneManager : MonoBehaviour
     void Update()
     {
         timer += Time.deltaTime;
-        if (timer > 3f)
+        if (timer > gameTime)
         {
             Button[] buttons = FindObjectsOfType<Button>();
             foreach (Button b in buttons)
@@ -39,6 +40,7 @@ public class KomtarSceneManager : MonoBehaviour
             inputManager.enabled = false;
             cameraController.enabled = false;
             EventSystem.current.SetSelectedGameObject(Ok.gameObject);
+            this.enabled = false;
         }
     }
 }

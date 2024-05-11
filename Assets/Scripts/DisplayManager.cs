@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
+using Image = UnityEngine.UI.Image;
 
 public class DisplayManager : MonoBehaviour
 {
     public InputManager inputSystem;
     public GameObject detailsPanel;
-    public TextMeshProUGUI name;
-    public TextMeshProUGUI objectType;
-    public TextMeshProUGUI detail;
     
     void Start()
     {
@@ -25,7 +25,6 @@ public class DisplayManager : MonoBehaviour
 
     void ShowDetailOfSelectedObject()
     {
-        TextMeshProUGUI[] textMeshProUGUIs = detailsPanel.GetComponentsInChildren<TextMeshProUGUI>();
         GameObject gameObject;
         if (inputSystem.selection)
         {
@@ -36,35 +35,95 @@ public class DisplayManager : MonoBehaviour
             gameObject = inputSystem.pointedGameObject;
         }
 
-        if (gameObject == null)
+        if (gameObject == null || Tag.CompareTags(gameObject.transform, Tag.Untagged))
         {
-            GetSpecificText(textMeshProUGUIs, "Name").text = "";
-            GetSpecificText(textMeshProUGUIs, "ObjectType").text = "";
-            GetSpecificText(textMeshProUGUIs, "Attribute").text = "";
             detailsPanel.SetActive(false);
             return;
         }
         detailsPanel.SetActive(true);
-        GetSpecificText(textMeshProUGUIs, "Name").text = gameObject.name;
-        GetSpecificText(textMeshProUGUIs, "ObjectType").text = gameObject.tag;
+        GetTextMeshProUI(detailsPanel, "Name").text = gameObject.name;
+        GameObject lastEnabledAttribute;
+
         if (Tag.CompareTags(gameObject.transform, Tag.Vehicle))
         {
-            GetSpecificText(textMeshProUGUIs, "Attribute").text = gameObject.GetComponent<VehicleMovement>().currentSpeed.ToString();
+            GetTextMeshProUI(detailsPanel, "ObjectType").text = gameObject.tag;
+            detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-car");
+            GetTextMeshProUI(detailsPanel, "Attribute1").text = "Destination: " + gameObject.GetComponent<VehicleMovement>().goalObject.name;
+            GetTextMeshProUI(detailsPanel, "Attribute2").text = "Desired Speed: " + gameObject.GetComponent<VehicleMovement>().desiredSpeed.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute3").text = "Current Speed: " + gameObject.GetComponent<VehicleMovement>().currentSpeed.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute4").text = "Waited Time: " + gameObject.GetComponent<VehicleMovement>().timeWaited.ToString("F2");
+            lastEnabledAttribute = detailsPanel.transform.Find("Attributes").Find("Attribute4").gameObject;
+            GetTextMeshProUI(detailsPanel, "Attribute1").enabled = true;
+            GetTextMeshProUI(detailsPanel, "Attribute2").enabled = true;
+            GetTextMeshProUI(detailsPanel, "Attribute3").enabled = true;
+            GetTextMeshProUI(detailsPanel, "Attribute4").enabled = true;
+        }
+        else if (Tag.CompareTags(gameObject.transform, Tag.Goal))
+        {
+            GetTextMeshProUI(detailsPanel, "ObjectType").text = "Building";
+            detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-house");
+            lastEnabledAttribute = detailsPanel.transform.Find("IconName").gameObject;
+            GetTextMeshProUI(detailsPanel, "Attribute1").enabled = false;
+            GetTextMeshProUI(detailsPanel, "Attribute2").enabled = false;
+            GetTextMeshProUI(detailsPanel, "Attribute3").enabled = false;
+            GetTextMeshProUI(detailsPanel, "Attribute4").enabled = false;
+        }
+        else if (Tag.CompareTags(gameObject.transform, Tag.Road_Large, Tag.Road_Small))
+        {
+            GetTextMeshProUI(detailsPanel, "ObjectType").text = "Road";
+            detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-road");
+            GetTextMeshProUI(detailsPanel, "Attribute1").text = "Road Length: " + gameObject.GetComponent<RoadTrafficDensity>().RoadLength.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute2").text = "No. Of Vehicles: " + gameObject.GetComponent<RoadTrafficDensity>().NumberOfCars.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute3").text = "Traffic Density: " + gameObject.GetComponent<RoadTrafficDensity>().TrafficDensity.ToString("F2");
+            lastEnabledAttribute = detailsPanel.transform.Find("Attributes").Find("Attribute3").gameObject;
+            GetTextMeshProUI(detailsPanel, "Attribute1").enabled = true;
+            GetTextMeshProUI(detailsPanel, "Attribute2").enabled = true;
+            GetTextMeshProUI(detailsPanel, "Attribute3").enabled = true;
+            GetTextMeshProUI(detailsPanel, "Attribute4").enabled = false;
         }
         else
         {
-            GetSpecificText(textMeshProUGUIs, "Attribute").text = "";
+            lastEnabledAttribute = detailsPanel.transform.Find("Attributes").Find("Attribute1").gameObject;
         }
+
+        float newHeight =
+               detailsPanel.transform.Find("IconName").GetComponent<RectTransform>().sizeDelta.y +
+               detailsPanel.transform.Find("IconName").GetComponent<RectTransform>().localPosition.y * -1;
+        if (lastEnabledAttribute.name != "IconName")
+        {
+            newHeight = newHeight +
+               lastEnabledAttribute.GetComponent<RectTransform>().sizeDelta.y +
+               lastEnabledAttribute.GetComponent<RectTransform>().localPosition.y * -1;
+        }
+        else
+        {
+            newHeight -= 40f;
+        }
+        detailsPanel.transform.GetComponent<RectTransform>().sizeDelta = new Vector2(detailsPanel.transform.GetComponent<RectTransform>().sizeDelta.x, Mathf.Abs(newHeight) + 5f);
     }
 
-    private TextMeshProUGUI GetSpecificText(TextMeshProUGUI[] textMeshProUGUIs, string text)
+    private TextMeshProUGUI GetTextMeshProUI(GameObject gameObject, string text)
     {
-        foreach (TextMeshProUGUI textMeshProUGUI in textMeshProUGUIs)
+        Transform transform = gameObject.transform.Find(text);
+        TextMeshProUGUI textMeshProUGUI;
+        if (transform != null)
         {
-            if (textMeshProUGUI.name == text)
-                return textMeshProUGUI;
+            textMeshProUGUI = transform.GetComponent<TextMeshProUGUI>();
+            return textMeshProUGUI;
         }
-        return null;
+        else
+        {
+            for (int i = 0; i < gameObject.transform.childCount; i++)
+            {
+                transform = gameObject.transform.GetChild(i).Find(text);
+                if (transform != null)
+                {
+                    textMeshProUGUI = transform.GetComponent<TextMeshProUGUI>();
+                    return textMeshProUGUI;
+                }
+            }
+            return null;
+        }
     }
 
 }

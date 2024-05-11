@@ -23,10 +23,15 @@ public class PerformanceCalculation : MonoBehaviour
     private void DisplayTotalWaitingTime()
     {
         originalWaitingTime = GraphPanel.GetComponent<GraphManager>().OriginalSumWaitingTime;
-        transform.Find("OriginalValue").GetComponent<TextMeshProUGUI>().text = originalWaitingTime.ToString("F2") + " Seconds";
+        TextMeshProUGUI textMeshProUGUI;
+        textMeshProUGUI = transform.Find("OriginalValue").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.text = originalWaitingTime.ToString("F0") + " Seconds";
+        textMeshProUGUI.color = GraphPanel.transform.Find("Original").GetComponent<LineRenderer>().startColor;
 
         modifiedWaitingTime = GraphPanel.GetComponent<GraphManager>().ModifiedSumWaitingTime;
-        transform.Find("ModifiedValue").GetComponent<TextMeshProUGUI>().text = modifiedWaitingTime.ToString("F2") + " Seconds";
+        textMeshProUGUI = transform.Find("ModifiedValue").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.text = modifiedWaitingTime.ToString("F0") + " Seconds";
+        textMeshProUGUI.color = GraphPanel.transform.Find("Modified").GetComponent<LineRenderer>().startColor;
     }
 
     private void DisplayPerformanceResult()

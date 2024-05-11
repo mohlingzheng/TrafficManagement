@@ -257,10 +257,12 @@ public class InputManager : MonoBehaviour
             }
             else
             {
+                highlight.gameObject.isStatic = false;
                 Outline outline = highlight.gameObject.AddComponent<Outline>();
                 outline.OutlineColor = new Color(91, 250, 98);
                 outline.OutlineWidth = 2;
                 outline.enabled = true;
+                highlight.gameObject.isStatic = true;
             }
             if (highlight.CompareTag(Tag.Vehicle))
             {
@@ -492,21 +494,21 @@ public class InputManager : MonoBehaviour
     {
         if (inputMode == InputMode.Default)
         {
-            ChangeToSelectedColor(buttonPanel.transform.GetChild(0).gameObject);
-            ChangeToNormalColor(buttonPanel.transform.GetChild(1).gameObject);
-            ChangeToNormalColor(buttonPanel.transform.GetChild(2).gameObject);
+            ChangeToSelectedColor(buttonPanel.transform.Find("Select").gameObject);
+            ChangeToNormalColor(buttonPanel.transform.Find("Road").gameObject);
+            ChangeToNormalColor(buttonPanel.transform.Find("Remove").gameObject);
         }
         else if (inputMode == InputMode.Build)
         {
-            ChangeToNormalColor(buttonPanel.transform.GetChild(0).gameObject);
-            ChangeToSelectedColor(buttonPanel.transform.GetChild(1).gameObject);
-            ChangeToNormalColor(buttonPanel.transform.GetChild(2).gameObject);
+            ChangeToNormalColor(buttonPanel.transform.Find("Select").gameObject);
+            ChangeToSelectedColor(buttonPanel.transform.Find("Road").gameObject);
+            ChangeToNormalColor(buttonPanel.transform.Find("Remove").gameObject);
         }
         else if (inputMode == InputMode.Remove)
         {
-            ChangeToNormalColor(buttonPanel.transform.GetChild(0).gameObject);
-            ChangeToNormalColor(buttonPanel.transform.GetChild(1).gameObject);
-            ChangeToSelectedColor(buttonPanel.transform.GetChild(2).gameObject);
+            ChangeToNormalColor(buttonPanel.transform.Find("Select").gameObject);
+            ChangeToNormalColor(buttonPanel.transform.Find("Road").gameObject);
+            ChangeToSelectedColor(  buttonPanel.transform.Find("Remove").gameObject);
         }
         else
         {
@@ -522,9 +524,9 @@ public class InputManager : MonoBehaviour
 
     public void RemoveInputModeChoice()
     {
-        ChangeToNormalColor(buttonPanel.transform.GetChild(0).gameObject);
-        ChangeToNormalColor(buttonPanel.transform.GetChild(1).gameObject);
-        ChangeToNormalColor(buttonPanel.transform.GetChild(2).gameObject);
+        ChangeToNormalColor(buttonPanel.transform.Find("Select").gameObject);
+        ChangeToNormalColor(buttonPanel.transform.Find("Road").gameObject);
+        ChangeToNormalColor(buttonPanel.transform.Find("Remove").gameObject);
     }
 
     private void HandleInputModeChange()

@@ -799,6 +799,7 @@ public class VehicleMovement : MonoBehaviour
 
     private void UpdateTimeAndDestroy()
     {
+        previousRoad.GetComponent<RoadTrafficDensity>().DecreaseCount();
         timeTrackingManager.currentTotalTime += timeWaited;
         vehicleGeneration.ReduceVehicleCount(1);
         Destroy(gameObject);

@@ -12,13 +12,13 @@ public class RoadTrafficDensity : MonoBehaviour
     void Start()
     {
         RoadLength = gameObject.GetComponent<Road>().GetLength();
-        StartCoroutine(CalculateTrafficDensity());
+        //StartCoroutine(CalculateTrafficDensity());
         divisor = Tag.CompareTags(transform, Tag.Road_Large) ? 4 : 2;
     }
 
     void Update()
     {
-
+        TrafficDensity = NumberOfCars / RoadLength;
     }
 
     private IEnumerator CalculateTrafficDensity()

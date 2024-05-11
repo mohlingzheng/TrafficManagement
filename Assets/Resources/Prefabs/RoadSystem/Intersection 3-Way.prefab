@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 403653522733796219}
   - component: {fileID: 403653522733796216}
+  - component: {fileID: -1101719004382382235}
   m_Layer: 0
   m_Name: Intersection 3-Way
   m_TagString: Intersection_3_Small
@@ -53,6 +54,24 @@ MonoBehaviour:
   - {fileID: 403653523762481237}
   - {fileID: 403653523031051313}
   radius: 7
+--- !u!114 &-1101719004382382235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 403653522733796218}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &403653523031051315
 GameObject:
   m_ObjectHideFlags: 0

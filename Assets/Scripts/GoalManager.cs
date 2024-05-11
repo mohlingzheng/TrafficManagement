@@ -30,8 +30,10 @@ public class GoalManager : MonoBehaviour
         {
             if (building.GetComponent<Collider>() == null)
             {
+                building.isStatic = false;
                 //building.GetComponent<Collider>().enabled = false;
                 building.AddComponent<BoxCollider>();
+                building.isStatic = true;
             }
         }
     }
