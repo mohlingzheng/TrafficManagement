@@ -78,7 +78,7 @@ public class Outline : MonoBehaviour {
   private Material outlineMaskMaterial;
   private Material outlineFillMaterial;
 
-  private bool needsUpdate;
+  public bool needsUpdate;
 
   void Awake() {
 

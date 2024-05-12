@@ -11,6 +11,8 @@ public class MainMenu : MonoBehaviour
     Scene currentScene;
     private void Start()
     {
+        Time.timeScale = 1.0f;
+        KomtarSceneManager.IsPaused = false;
         if (EventSystem.current == null)
         {
             Debug.LogError("No EventSystem found in the scene.");

@@ -32,7 +32,8 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        HandleMovementInput();
+        if (!KomtarSceneManager.IsPaused)
+            HandleMovementInput();
         UpdatePositionRotation();
     }
 

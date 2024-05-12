@@ -61,7 +61,8 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-        ButtonInteraction();
+        if (!KomtarSceneManager.IsPaused)
+            ButtonInteraction();
         //if (!selection)
         //{
         //    selection = GameObject.FindGameObjectWithTag(Tag.Vehicle).transform;
