@@ -26,6 +26,7 @@ public class VehicleMovement : MonoBehaviour
     public float desiredSpeed;
     public float rotationSpeed = 10f;
     public Vector3 movingDirection;
+    public VehicleType vehicleType;
 
     [Header("Car Following Model")]
     public float currentAcceleration = 5f;
@@ -68,9 +69,7 @@ public class VehicleMovement : MonoBehaviour
         navigator.currentRoadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
         vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         timeTrackingManager = FindAnyObjectByType<TimeTrackingManager>();
-        desiredSpeed = Random.Range(10, 20);
-        if (transform.name == "Specific Vehicle")
-            desiredSpeed = 15f;
+        SetDesiredSpeed();
         SetRandomGoal();
         StartCoroutine(SetMovePointLoop());
     }
@@ -85,31 +84,43 @@ public class VehicleMovement : MonoBehaviour
         UpdateMovePointReady();
     }
 
+    private void SetDesiredSpeed()
+    {
+        if (vehicleType == VehicleType.Light)
+            desiredSpeed = Random.Range(15, 25);
+        else if (vehicleType == VehicleType.Heavy)
+            desiredSpeed = Random.Range(10, 15);
+        else
+            Debug.Log("No Vehicle Type Specified");
+        if (transform.name == "Specific Vehicle")
+            desiredSpeed = 15f;
+    }
+
     private void UpdateMovePointReady()
     {
         movePointReady = navigator.enabled == false;
     }
 
-    private void OnDrawGizmos()
-    {
-        if (movePoints.Count <= 3 && !movePointReady)
-            return;
-        for (int i = 1; i < movePoints.Count - 1; i++)
-        {
-            float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
-            Vector3 forwardDirection = (movePoints[i + 1].position - movePoints[i].position).normalized;
-            Vector3 testdirection = Vector3.Cross(Vector3.up, forwardDirection).normalized;
-            Vector3 target = movePoints[i].position + testdirection * distanceFromCentre;
-            if (ValueNearToZero(dotResult))
-            {
-                Gizmos.DrawSphere(target, 2f);
-            }
-            else
-            {
-                Gizmos.DrawSphere(target, 0.5f);
-            }
-        }
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    if (movePoints.Count <= 3 && !movePointReady)
+    //        return;
+    //    for (int i = 1; i < movePoints.Count - 1; i++)
+    //    {
+    //        float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
+    //        Vector3 forwardDirection = (movePoints[i + 1].position - movePoints[i].position).normalized;
+    //        Vector3 testdirection = Vector3.Cross(Vector3.up, forwardDirection).normalized;
+    //        Vector3 target = movePoints[i].position + testdirection * distanceFromCentre;
+    //        if (ValueNearToZero(dotResult))
+    //        {
+    //            Gizmos.DrawSphere(target, 2f);
+    //        }
+    //        else
+    //        {
+    //            Gizmos.DrawSphere(target, 0.5f);
+    //        }
+    //    }
+    //}
 
 
     private void TimeTracking()
@@ -701,21 +712,21 @@ public class VehicleMovement : MonoBehaviour
         while (movePointReady == false)
         {
             SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(1.0f);
+            SetMovePoints();
+            yield return new WaitForSeconds(1.0f);
+            SetMovePoints();
+            yield return new WaitForSeconds(1.0f);
             SetMovePoints();
             yield return new WaitForSeconds(0.5f);
             SetMovePoints();
             yield return new WaitForSeconds(0.5f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(0.5f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(0.5f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(0.5f);
             if (movePoints.Count > 3)
             {
                 movePointReady = true;
@@ -785,7 +796,7 @@ public class VehicleMovement : MonoBehaviour
     {
         if (collision.gameObject == goalObject)
         {
-            UpdateTimeAndDestroy();
+            UpdateTimeAndDestroy(true);
         }
     }
 
@@ -793,14 +804,17 @@ public class VehicleMovement : MonoBehaviour
     {
         if (transform.position.y < -10f)
         {
-            UpdateTimeAndDestroy();
+            UpdateTimeAndDestroy(false);
         }
     }
 
-    private void UpdateTimeAndDestroy()
+    private void UpdateTimeAndDestroy(bool normal = true)
     {
-        previousRoad.GetComponent<RoadTrafficDensity>().DecreaseCount();
-        timeTrackingManager.currentTotalTime += timeWaited;
+        if (normal)
+        {
+            previousRoad.GetComponent<RoadTrafficDensity>().DecreaseCount();
+            timeTrackingManager.currentTotalTime += timeWaited;
+        }
         vehicleGeneration.ReduceVehicleCount(1);
         Destroy(gameObject);
     }

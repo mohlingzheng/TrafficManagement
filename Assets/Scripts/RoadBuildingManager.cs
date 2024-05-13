@@ -38,7 +38,7 @@ public class RoadBuildingManager : MonoBehaviour
 
     void Update()
     {
-        RebuildAffectedRoad();
+        //RebuildAffectedRoad();
         MakeTransparent(previewRoadSystem.transform);
     }
 
@@ -80,13 +80,19 @@ public class RoadBuildingManager : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(direction);
         GameObject middle_interesection = CreateObjectAtPosition(roadSystem, intersectionPrefab, position, rotation);
 
-        // get correct Anchor from first intersection
-        roadAnchors = first_int.GetComponentsInChildren<RoadAnchor>();
-        road1_start = GetClosetRoadAnchor(roadAnchors, road1_start.gameObject);
+        // get correct Anchor from first intersection for Preview Only (Actual can use it directly)
+        if (buildMode == BuildMode.Preview)
+        {
+            roadAnchors = first_int.GetComponentsInChildren<RoadAnchor>();
+            road1_start = GetClosetRoadAnchor(roadAnchors, road1_start.gameObject);
+        }
 
         // get correct Anchor from second intersection
-        roadAnchors = second_int.GetComponentsInChildren<RoadAnchor>();
-        road1_end = GetClosetRoadAnchor(roadAnchors, road1_end.gameObject);
+        if (buildMode == BuildMode.Preview)
+        {
+            roadAnchors = second_int.GetComponentsInChildren<RoadAnchor>();
+            road1_end = GetClosetRoadAnchor(roadAnchors, road1_end.gameObject);
+        }
 
         // get correct Anchor from middle intersection to first and second
         roadAnchors = middle_interesection.GetComponentsInChildren<RoadAnchor>();

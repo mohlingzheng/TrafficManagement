@@ -10,6 +10,7 @@ using Image = UnityEngine.UI.Image;
 public class DisplayManager : MonoBehaviour
 {
     public InputManager inputSystem;
+    public GameObject canvas;
     public GameObject detailsPanel;
     
     void Start()
@@ -124,6 +125,20 @@ public class DisplayManager : MonoBehaviour
             }
             return null;
         }
+    }
+
+    public void ShowLoadingPanel()
+    {
+        canvas.transform.Find("LoadingPanel").gameObject.SetActive(true);
+        Debug.Log("Showing");
+        //Time.timeScale = 0f;
+    }
+
+    public void HideLoadingPanel()
+    {
+        canvas.transform.Find("LoadingPanel").gameObject.SetActive(false);
+        Debug.Log("Showing un");
+        //Time.timeScale = 1.0f;
     }
 
 }

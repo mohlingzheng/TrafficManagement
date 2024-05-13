@@ -18,6 +18,7 @@ public class InputManager : MonoBehaviour
     public RoadSystem roadSystem;
     public RoadSystem previewRoadSystem;
     public IntersectionManager intersectionManager;
+    public DisplayManager displayManager;
 
     [Header("Input Mode")]
     public InputMode inputMode = InputMode.Default;
@@ -237,6 +238,8 @@ public class InputManager : MonoBehaviour
 
     public void OutlineGameObject(Transform transform)
     {
+        //if (transform.parent.name == "PreviewRoadSystem")
+        //    return;
         // if previously highlight some gameobject, disable it and set to null
         if (highlight != null)
         {
@@ -258,12 +261,12 @@ public class InputManager : MonoBehaviour
             }
             else
             {
-                highlight.gameObject.isStatic = false;
+                //highlight.gameObject.isStatic = false;
                 Outline outline = highlight.gameObject.AddComponent<Outline>();
                 outline.OutlineColor = new Color(91, 250, 98);
                 outline.OutlineWidth = 2;
                 outline.enabled = true;
-                highlight.gameObject.isStatic = true;
+                //highlight.gameObject.isStatic = true;
             }
             if (highlight.CompareTag(Tag.Vehicle))
             {
@@ -349,6 +352,7 @@ public class InputManager : MonoBehaviour
                 {
                     Debug.Log("Do nothing");
                 }
+                roadBuildingManager.RebuildAffectedRoad();
             }
             else if (secondPoint == Vector3.zero && pointedGameObject.transform.parent == roadSystem.gameObject.transform)
             {
@@ -376,6 +380,7 @@ public class InputManager : MonoBehaviour
                 {
                     Debug.Log("Do nothing");
                 }
+                roadBuildingManager.RebuildAffectedRoad();
             }
             // do connection
             if (firstPoint != Vector3.zero && secondPoint != Vector3.zero)
@@ -384,24 +389,14 @@ public class InputManager : MonoBehaviour
                 roadBuildingManager.ConnectTwoIntersections(previewRoadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Preview);
                 confirm = true;
                 roadBuildingManager.IncreaseCount();
+                roadBuildingManager.RebuildAffectedRoad();
             }
 
         }
         else if (Input.GetButtonDown("A") && confirm)
         {
             Debug.Log("implement build");
-            if (Tag.CompareTags(firstSelectedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
-                firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
-            else 
-                firstAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, firstSelectedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Actual);
-
-            if (Tag.CompareTags(secondSelectedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
-                secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
-            else
-                secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
-
-            roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
-            ResetUponRoadModification();
+            StartCoroutine(BuildRoad());
         }
         else if (Input.GetButtonDown("B"))
         {
@@ -434,6 +429,25 @@ public class InputManager : MonoBehaviour
                 SetUIOnRoadPreview(3);
             }
         }
+    }
+
+    IEnumerator BuildRoad()
+    {
+        displayManager.ShowLoadingPanel();
+        yield return new WaitForSecondsRealtime(0.01f);
+        if (Tag.CompareTags(firstSelectedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
+            firstAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
+        else
+            firstAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, firstSelectedGameObject.transform.parent.gameObject, firstPoint, BuildMode.Actual);
+
+        if (Tag.CompareTags(secondSelectedGameObject.transform, Tag.Road_Small, Tag.Road_Large))
+            secondAnchor = roadBuildingManager.CreatePreviewRoad(roadSystem.gameObject, secondSelectedGameObject, secondPoint, BuildMode.Actual);
+        else
+            secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
+
+        roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
+        ResetUponRoadModification();
+        displayManager.HideLoadingPanel();
     }
 
     public void SetUIOnRoadPreview(int num)
@@ -590,6 +604,7 @@ public class InputManager : MonoBehaviour
     private void ResetUponRoadModification()
     {
         roadSystem.ConstructGraph();
+        roadBuildingManager.RebuildAffectedRoad();
         ResetRoadBuilding();
         DestroyAllPreviewObject();
         intersectionManager.GetLatestIntersection();

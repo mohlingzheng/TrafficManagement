@@ -32,8 +32,9 @@ public class QueueingLogic : MonoBehaviour
                 if (!CheckAnyVehicle())
                 {
                     GameObject vehicle = queue.Dequeue();
-                    Instantiate(vehicle, VehicleList.transform);
-                    vehicle.transform.position = transform.position;
+                    GameObject created = Instantiate(vehicle, VehicleList.transform);
+                    created.transform.position = transform.position;
+                    created.name = vehicle.name;
                 }
             }
             yield return new WaitForSeconds(0.5f);

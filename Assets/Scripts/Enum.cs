@@ -88,3 +88,9 @@ public enum GraphMode
     Original = 0,
     Modified = 1,
 }
+
+public enum VehicleType
+{
+    Light = 0,
+    Heavy = 1,
+}
