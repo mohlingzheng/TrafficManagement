@@ -418,7 +418,10 @@ public class RoadBuildingManager : MonoBehaviour
         {
             actualRoadSystem.ConstructGraph();
             foreach (var road in actualRoadList)
+            {
+                if (road == null) continue;
                 road.OnCurveChanged(true);
+            }
             actualRoadSystem.RebuildAllRoads();
             actualRoadList.Clear();
         }
@@ -497,6 +500,8 @@ public class RoadBuildingManager : MonoBehaviour
         CreatePreviewForEachRoadStartEnd(roadSystem, road, road_end, buildMode);
         if (buildMode == BuildMode.Actual)
         {
+            AddToRoadList(road, buildMode);
+            RebuildAffectedRoad();
             Destroy(roadGameObject);
         }
     }
@@ -689,6 +694,7 @@ public class RoadBuildingManager : MonoBehaviour
                 Destroy(road_anchor.transform.parent.gameObject);
             }
         }
+        RebuildAffectedRoad();
     }
 
     private Vector3 GetRoadClosestPositionUsingSpacedPoints(Road road, Vector3 position)

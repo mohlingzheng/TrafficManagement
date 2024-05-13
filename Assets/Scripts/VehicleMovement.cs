@@ -712,15 +712,15 @@ public class VehicleMovement : MonoBehaviour
         while (movePointReady == false)
         {
             SetMovePoints();
-            yield return new WaitForSeconds(1.0f);
-            SetMovePoints();
-            yield return new WaitForSeconds(1.0f);
-            SetMovePoints();
-            yield return new WaitForSeconds(1.0f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
-            SetMovePoints();
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.1f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(1.0f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(1.0f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(0.5f);
+            //SetMovePoints();
+            //yield return new WaitForSeconds(0.5f);
             //SetMovePoints();
             //yield return new WaitForSeconds(0.5f);
             //SetMovePoints();
@@ -746,28 +746,38 @@ public class VehicleMovement : MonoBehaviour
 
     public void RemoveMovePointsWith90Degree()
     {
-        if (movePoints.Count <= 3 || !movePointReady)
+        if (!movePointReady)
+            return;
+        else if (movePoints.Count <= 3)
             return;
         for (int i = 1; i < movePoints.Count - 3; i++)
         {
             float dotResult = GetDotResult(movePoints[i - 1].position, movePoints[i].position, movePoints[i + 1].position);
             if (ValueNearToZero(dotResult))
             {
-                movePoints.RemoveAt(i + 5);
-                movePoints.RemoveAt(i + 4);
-                movePoints.RemoveAt(i + 3);
-                movePoints.RemoveAt(i + 2);
-                movePoints.RemoveAt(i + 1);
+                RemoveIfExist(i + 5);
+                RemoveIfExist(i + 4);
+                RemoveIfExist(i + 3);
+                RemoveIfExist(i + 2);
+                RemoveIfExist(i + 1);
 
-                movePoints.RemoveAt(i);
+                RemoveIfExist(i);
 
-                movePoints.RemoveAt(i - 1);
-                movePoints.RemoveAt(i - 2);
-                movePoints.RemoveAt(i - 3);
-                movePoints.RemoveAt(i - 4);
-                movePoints.RemoveAt(i - 5);
+                RemoveIfExist(i - 1);
+                RemoveIfExist(i - 2);
+                RemoveIfExist(i - 3);
+                RemoveIfExist(i - 4);
+                RemoveIfExist(i - 5);
             }
         }
+    }
+
+    private void RemoveIfExist(int i)
+    {
+        if (i <= 0 || i >= movePoints.Count)
+            return;
+        else
+            movePoints.RemoveAt(i);
     }
 
     public float GetDotResult (Vector3 p1, Vector3 p2, Vector3 p3)

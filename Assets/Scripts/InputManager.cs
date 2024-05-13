@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor;
-using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -13,7 +12,7 @@ using UnityEngine.UI;
 public class InputManager : MonoBehaviour
 {
     public Camera mainCamera;
-    public Image pointer;
+    public GameObject pointer;
     public RoadBuildingManager roadBuildingManager;
     public RoadSystem roadSystem;
     public RoadSystem previewRoadSystem;
@@ -119,13 +118,13 @@ public class InputManager : MonoBehaviour
                 {
                     Debug.Log("Do nothing");
                 }
+                roadBuildingManager.RebuildAffectedRoad();
             }
         }
         else if (Input.GetButtonDown("A") && confirm == true)
         {
             Debug.Log("Implement Road Removing");
-            roadBuildingManager.CreatePreviewRemovedRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
-            ResetUponRoadModification();
+            StartCoroutine(RemoveRoad());
         }
         else if (Input.GetButtonDown("B"))
         {
@@ -153,7 +152,7 @@ public class InputManager : MonoBehaviour
     public void GetRaycastObjectHit()
     {
         RaycastHit hit;
-        Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
+        Ray ray = mainCamera.ScreenPointToRay(pointer.transform.position);
         //Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.blue);
         if (inputMode == InputMode.Default)
         {
@@ -431,6 +430,24 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    IEnumerator RemoveRoad()
+    {
+        displayManager.ShowLoadingPanel();
+        yield return new WaitForSecondsRealtime(0.01f);
+        roadBuildingManager.CreatePreviewRemovedRoad(roadSystem.gameObject, firstSelectedGameObject, firstPoint, BuildMode.Actual);
+        yield return new WaitForSecondsRealtime(0.01f);
+        //ResetUponRoadModification();
+        roadBuildingManager.RebuildAffectedRoad();
+        roadSystem.ConstructGraph();
+        ResetRoadBuilding();
+        DestroyAllPreviewObject();
+        intersectionManager.GetLatestIntersection();
+        yield return new WaitForSecondsRealtime(0.01f);
+        PathFindingRecalculate();
+        SetUIOnRoadPreview(5);
+        displayManager.HideLoadingPanel();
+    }
+
     IEnumerator BuildRoad()
     {
         displayManager.ShowLoadingPanel();
@@ -446,7 +463,15 @@ public class InputManager : MonoBehaviour
             secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
 
         roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
-        ResetUponRoadModification();
+        //ResetUponRoadModification();
+        roadBuildingManager.RebuildAffectedRoad();
+        roadSystem.ConstructGraph();
+        ResetRoadBuilding();
+        DestroyAllPreviewObject();
+        intersectionManager.GetLatestIntersection();
+        yield return new WaitForSecondsRealtime(0.01f);
+        PathFindingRecalculate();
+        SetUIOnRoadPreview(5);
         displayManager.HideLoadingPanel();
     }
 
@@ -497,7 +522,7 @@ public class InputManager : MonoBehaviour
     public void GetRaycastPositionHit()
     {
         RaycastHit hit;
-        Ray ray = mainCamera.ScreenPointToRay(pointer.gameObject.transform.position);
+        Ray ray = mainCamera.ScreenPointToRay(pointer.transform.position);
         //Debug.DrawRay(ray.origin, ray.direction * 1000f, Color.white);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, LayerMask.GetMask("Terrain")))
         {
@@ -568,11 +593,11 @@ public class InputManager : MonoBehaviour
 
     private void PathFindingRecalculate()
     {
-        float time = 0;
-        while (time < 3)
-        {
-            time += Time.deltaTime;
-        }
+        //float time = 0;
+        //while (time < 3)
+        //{
+        //    time += Time.deltaTime;
+        //}
         GameObject[] vehicles = GameObject.FindGameObjectsWithTag(Tag.Vehicle);
         Debug.Log("Vehicle recalculating path");
         foreach (GameObject vehicle in vehicles)
@@ -603,8 +628,8 @@ public class InputManager : MonoBehaviour
 
     private void ResetUponRoadModification()
     {
-        roadSystem.ConstructGraph();
         roadBuildingManager.RebuildAffectedRoad();
+        roadSystem.ConstructGraph();
         ResetRoadBuilding();
         DestroyAllPreviewObject();
         intersectionManager.GetLatestIntersection();
