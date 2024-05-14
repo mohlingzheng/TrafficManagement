@@ -94,3 +94,11 @@ public enum VehicleType
     Light = 0,
     Heavy = 1,
 }
+
+public static class AnchorType
+{
+    public static readonly string anchor_north = "Anchor North";
+    public static readonly string anchor_east = "Anchor East";
+    public static readonly string anchor_south = "Anchor South";
+    public static readonly string anchor_west = "Anchor West";
+}

@@ -93,7 +93,10 @@ public class VehicleMovement : MonoBehaviour
         else
             Debug.Log("No Vehicle Type Specified");
         if (transform.name == "Specific Vehicle")
-            desiredSpeed = 15f;
+        {
+            desiredSpeed = 50f;
+            highSpeed = true;
+        }
     }
 
     private void UpdateMovePointReady()
@@ -142,6 +145,14 @@ public class VehicleMovement : MonoBehaviour
         {
             UpdateHighSpeed(true);
         }
+        else if (currentRoadType == OnLanes.Large && GoingToTurnLeft())
+        {
+            UpdateHighSpeed(false);
+        }
+        else if (currentRoadType == OnLanes.Large && GoingToTurnRight())
+        {
+            UpdateHighSpeed(true);
+        }
         else if (currentRoadType == OnLanes.Large && !stopDueToTraffic)
         {
             ChangeLane();
@@ -159,6 +170,88 @@ public class VehicleMovement : MonoBehaviour
             }
         }
         distanceFromCentre = highSpeed ? OnLanes.GetValue(OnLanes.High) : OnLanes.GetValue(OnLanes.Low);
+    }
+
+    private bool GoingToTurnLeft()
+    {
+        //if (Count)
+        //    return true;
+
+        int gap = 5;
+        for (int i = 0; i < movePoints.Count; i++)
+        {
+            if (i + gap > movePoints.Count - 1)
+                return false;
+            Vector3 delta = movePoints[i + gap].position - movePoints[i].position;
+            Vector3 crossProduct = Vector3.Cross(delta, movePoints[i + 1].position - movePoints[i].position);
+            dotProduct = Vector3.Dot(crossProduct, transform.up);
+            if (dotProduct > 3.0f)
+            {
+                //if (!Count)
+                //    Count = true;
+                //Debug.Log("Going to Turn Left");
+                float distance = Vector3.Distance(movePoints[i].position, transform.position);
+                if (distance < 60f)
+                {
+                    //Debug.Log(distance);
+                    return true;
+                }
+                else { return false; }
+                //return true;
+            }
+        }
+        return false;
+    }
+
+    private bool GoingToTurnRight()
+    {
+        //if (Count)
+        //    return true;
+        //int index = 3;
+        //index = Mathf.Clamp(index, 0, movePoints.Count);
+        //if (movePoints.Count < index + 1)
+        //    return false;
+        //Vector3 delta = movePoints[index].position - transform.position;
+        //Vector3 crossProduct = Vector3.Cross(delta, transform.forward);
+        //dotProduct = Vector3.Dot(crossProduct, transform.up);
+        //if (dotProduct < -3.0f)
+        //{
+        //    if (!Count)
+        //        Count = true;
+        //    return true;
+        //}
+        //else
+        //{
+        //    return false;
+        //}
+
+        //if (Count)
+        //    return true;
+
+        int gap = 5;
+        for (int i = 0; i < movePoints.Count; i++)
+        {
+            if (i + gap > movePoints.Count - 1)
+                return false;
+            Vector3 delta = movePoints[i + gap].position - movePoints[i].position;
+            Vector3 crossProduct = Vector3.Cross(delta, movePoints[i + 1].position - movePoints[i].position);
+            dotProduct = Vector3.Dot(crossProduct, transform.up);
+            if (dotProduct < -3.0f)
+            {
+                //if (!Count)
+                //    Count = true;
+                //Debug.Log("Going to Turn Right");
+                float distance = Vector3.Distance(movePoints[i].position, transform.position);
+                if (distance < 60f)
+                {
+                    //Debug.Log(distance);
+                    return true;
+                }
+                else { return false; }
+                //return true;
+            }
+        }
+        return false;
     }
 
     private void LaneChangingClockCounter()
@@ -469,7 +562,7 @@ public class VehicleMovement : MonoBehaviour
 
     public void HandleTypeRaycasthit(RaycastHit? hit)
     {
-        if (hit.HasValue && DoHitHaveTag(hit.Value, "Vehicle") && IsVehicleSameLane(hit.Value))
+        if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle) && IsVehicleSameLane(hit.Value))
         {
             UpdateStopAttribute(hit.Value);
         }
@@ -487,7 +580,7 @@ public class VehicleMovement : MonoBehaviour
             {
                 if (WantToRight())
                 {
-                    if (CheckIfThereIsCar(GetNextWallGameObject(hit.Value.collider.gameObject, 2)))
+                    if (CheckIfThereIsCar(GetWallAcross(hit.Value.collider.gameObject)))
                     {
                         UpdateStopAttribute(hit.Value);
                     }
@@ -514,10 +607,10 @@ public class VehicleMovement : MonoBehaviour
         {
             if (WantToRight())
             {
-                if (hit.Value.collider.gameObject.transform.parent.name == "Anchor East")
+                if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_east)
                 {
                     // Check Anchor West
-                    if (CheckIfThereIsCar(GetNextWallGameObject(hit.Value.collider.gameObject, 1)))
+                    if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)))
                     {
                         UpdateStopAttribute(hit.Value);
                     }
@@ -526,9 +619,9 @@ public class VehicleMovement : MonoBehaviour
                         UpdateNormalAttribute();
                     }
                 }
-                else if (hit.Value.collider.gameObject.transform.parent.name == "Anchor North")
+                else if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_north)
                 {
-                    if (CheckIfThereIsCar(GetNextWallGameObject(hit.Value.collider.gameObject, 1)) || CheckIfThereIsCar(GetNextWallGameObject(hit.Value.collider.gameObject, 2)))
+                    if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)) || CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_east)))
                     {
                         UpdateStopAttribute(hit.Value);
                     }
@@ -544,14 +637,14 @@ public class VehicleMovement : MonoBehaviour
             }
             else if (WantToLeft())
             {
-                if (hit.Value.collider.gameObject.transform.parent.name == "Anchor West")
+                if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_west)
                 {
                     UpdateNormalAttribute();
                 }
-                else if (hit.Value.collider.gameObject.transform.parent.name == "Anchor North")
+                else if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_north)
                 {
                     // Check Anchor West
-                    if (CheckIfThereIsCar(GetNextWallGameObject(hit.Value.collider.gameObject, 2)))
+                    if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)))
                     {
                         UpdateStopAttribute(hit.Value);
                     }
@@ -617,49 +710,80 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
-    private GameObject GetNextWallGameObject(GameObject wall, int num)
+    private GameObject GetWallAcross(GameObject wall)
     {
-        GameObject intersection = wall.transform.parent.parent.gameObject;
-        GameObject[] anchors;
-        anchors = new GameObject[intersection.transform.childCount - 1];
-        int index = 0;
-        for (int i = 0; i < anchors.Length + 1; i++)
+        string name = wall.transform.parent.name;
+        if (name == AnchorType.anchor_north)
         {
-            GameObject tmpChild = intersection.transform.GetChild(i).gameObject;
-            if (tmpChild.name != "IntersectionT" && tmpChild.name != "Intersection")
-            {
-                anchors[index] = tmpChild;
-                index++;
-            }
+            return wall.transform.parent.parent.Find(AnchorType.anchor_south).Find("TrafficLightBlock").gameObject;
         }
-
-
-        int next = 0;
-        for (int i = 0; i < anchors.Length; i++)
+        else if (name == AnchorType.anchor_south)
         {
-            if (anchors[i].transform.GetChild(0) == wall.transform)
-            {
-                next = (i + num) % anchors.Length;
-                break;
-            }
+            return wall.transform.parent.parent.Find(AnchorType.anchor_north).Find("TrafficLightBlock").gameObject;
         }
+        else if (name == AnchorType.anchor_east)
+        {
+            return wall.transform.parent.parent.Find(AnchorType.anchor_west).Find("TrafficLightBlock").gameObject;
+        }
+        else if (name == AnchorType.anchor_west)
+        {
+            return wall.transform.parent.parent.Find(AnchorType.anchor_east).Find("TrafficLightBlock").gameObject;
+        }
+        else
+        {
+            return null;
+        }
+    }
 
-        GameObject nextWall = anchors[next].transform.GetChild(0).gameObject;
-        return nextWall;
+    private GameObject GetSpecificWall(GameObject wall, string anchor)
+    {
+        return wall.transform.parent.parent.Find(anchor).Find("TrafficLightBlock").gameObject;
     }
 
     private bool CheckIfThereIsCar(GameObject wall)
     {
-        RaycastHit hit;
-        Vector3 position = wall.transform.position - wall.transform.forward * 10f;
-        position.y -= 0.5f;
-        Debug.DrawRay(position, wall.transform.forward * 30f, UnityEngine.Color.red);
-        if (Physics.Raycast(position, wall.transform.forward, out hit, 30f))
+        if (Tag.CompareTags(wall.transform.parent.parent.transform, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
         {
-            if (hit.collider.transform.CompareTag("Vehicle"))
-                return true;
+            RaycastHit hitLeft, hitRight;
+            Vector3 positionLeft = wall.transform.position - wall.transform.forward * 10f;
+            positionLeft.y -= 0.5f;
+            positionLeft -= wall.transform.right * 2f;
+            Debug.DrawRay(positionLeft, wall.transform.forward * 30f, UnityEngine.Color.red);
+
+            if (Physics.Raycast(positionLeft, wall.transform.forward, out hitLeft, 30f))
+            {
+                if (hitLeft.collider.transform.CompareTag("Vehicle"))
+                    return true;
+            }
+
+            Vector3 positionRight = wall.transform.position - wall.transform.forward * 10f;
+            positionRight.y -= 0.5f;
+            positionRight += wall.transform.right * 2f;
+            Debug.DrawRay(positionRight, wall.transform.forward * 30f, UnityEngine.Color.blue);
+
+            if (Physics.Raycast(positionRight, wall.transform.forward, out hitRight, 30f))
+            {
+                if (hitRight.collider.transform.CompareTag("Vehicle"))
+                    return true;
+            }
+
+            return false;
         }
-        return false;
+        else if (Tag.CompareTags(wall.transform.parent.parent.transform, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
+        {
+            RaycastHit hit;
+            Vector3 position = wall.transform.position - wall.transform.forward * 10f;
+            position.y -= 0.5f;
+            Debug.DrawRay(position, wall.transform.forward * 30f, UnityEngine.Color.red);
+            if (Physics.Raycast(position, wall.transform.forward, out hit, 30f))
+            {
+                if (hit.collider.transform.CompareTag("Vehicle"))
+                    return true;
+            }
+            return false;
+        }
+        else
+            return false;
     }
 
     private void UpdateNormalAttribute()

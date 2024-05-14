@@ -33,6 +33,7 @@ public class IntersectionManager : MonoBehaviour
         intersection_4_small = GameObject.FindGameObjectsWithTag(Tag.Intersection_4_Small);
         intersection_3_large = GameObject.FindGameObjectsWithTag(Tag.Intersection_3_Large);
         intersection_4_large = GameObject.FindGameObjectsWithTag(Tag.Intersection_4_Large);
+        GenerateTrafficLightBlock();
     }
 
     private void GenerateTrafficLightBlock()
@@ -47,6 +48,7 @@ public class IntersectionManager : MonoBehaviour
                 
                 GameObject block;
                 block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
+                block.name = "TrafficLightBlock";
 
                 if (block.transform.position != GetRayPositionFromRoadAnchor(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
                 {
@@ -88,6 +90,7 @@ public class IntersectionManager : MonoBehaviour
             {
                 GameObject block;
                 block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
+                block.name = "TrafficLightBlock";
 
                 if (block.transform.position != GetRayPositionFromRoadAnchor(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
                 {
@@ -118,6 +121,7 @@ public class IntersectionManager : MonoBehaviour
             {
                 GameObject block;
                 block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
+                block.name = "TrafficLightBlock";
 
                 if (block.transform.position != GetRayPositionFromRoadAnchorLarge(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
                 {
@@ -156,6 +160,7 @@ public class IntersectionManager : MonoBehaviour
             {
                 GameObject block;
                 block = (roadAnchor.transform.childCount <= 0) ? Instantiate(TrafficLightBlockGameObject, roadAnchor.transform) : roadAnchor.transform.GetChild(0).gameObject;
+                block.name = "TrafficLightBlock";
 
                 if (block.transform.position != GetRayPositionFromRoadAnchorLarge(roadAnchor) || block.transform.rotation != roadAnchor.transform.rotation)
                 {
