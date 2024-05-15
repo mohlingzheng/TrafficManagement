@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class VehicleMovement : MonoBehaviour
 {
@@ -43,6 +44,7 @@ public class VehicleMovement : MonoBehaviour
     public float laneChangingClock = 0f;
     public string goingToTurn = "";
     public Vector3 pointToTurn;
+    public bool SeeingTransitionWall = false;
 
     [Header("Analysis")]
     public double timeWaited = 0f;
@@ -82,6 +84,7 @@ public class VehicleMovement : MonoBehaviour
         RemoveMovePointsWith90Degree();
         DynamicSpeedLogic();
         LaneChangingLogic();
+        MoveWithCurrentSpeed();
         TimeTracking();
         RemoveOnUnexpectedPosition();
         UpdateMovePointReady();
@@ -339,7 +342,7 @@ public class VehicleMovement : MonoBehaviour
                 }
             }
         }
-        else if (highSpeed)
+        else if (highSpeed && !SeeingTransitionWall)
         {
             RaycastHit? hit = CheckObjectInBehind();
             if (hit.HasValue)
@@ -463,7 +466,6 @@ public class VehicleMovement : MonoBehaviour
     {
         RaycastHit? hit = CheckObjectInfront();
         HandleTypeRaycasthit(hit);
-        MoveWithCurrentSpeed();
     }
 
     private void MoveWithCurrentSpeed()
@@ -472,7 +474,11 @@ public class VehicleMovement : MonoBehaviour
         {
             Vector3 forwardDirection;
             if (currentPoint == movePoints.Count - 1)
-                forwardDirection = (goalObject.gameObject.transform.position - movePoints[currentPoint].position).normalized;
+            {
+                Vector3 position = goalObject.gameObject.transform.position;
+                position.y = 0;
+                forwardDirection = (position - movePoints[currentPoint].position).normalized;
+            }
             else
                 forwardDirection = (movePoints[currentPoint + 1].position - movePoints[currentPoint].position).normalized;
             Vector3 testdirection = Vector3.Cross(Vector3.up, forwardDirection).normalized;
@@ -582,27 +588,44 @@ public class VehicleMovement : MonoBehaviour
             currentSpeed = FixedDesiredSpeed / 2;
         }
 
-        if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle) && IsVehicleSameLane(hit.Value))
+        if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Transition_Wall) && !highSpeed)
         {
+            SeeingTransitionWall = true;
+            if (CheckLaneFeasible("Right"))
+            {
+                UpdateHighSpeed(true);
+            }
             UpdateStopAttribute(hit.Value);
         }
-        else if (
-            hit.HasValue
-            && DoHitHaveLayer(hit.Value, "Invisible")
-            && Tag.CompareTags(hit.Value.collider.transform.parent.parent, Tag.Intersection_4_Small, Tag.Intersection_4_Large)
-            )
+        else
         {
-            if (hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red))
+            SeeingTransitionWall = false;
+            if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle) && IsVehicleSameLane(hit.Value))
             {
                 UpdateStopAttribute(hit.Value);
             }
-            else if (hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Green))
+            else if (
+                hit.HasValue
+                && DoHitHaveLayer(hit.Value, "Invisible")
+                && Tag.CompareTags(hit.Value.collider.transform.parent.parent, Tag.Intersection_4_Small, Tag.Intersection_4_Large)
+                )
             {
-                if (WantToRight() && goingToTurn == "Right")
+                if (hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Red))
                 {
-                    if (CheckIfThereIsCar(GetWallAcross(hit.Value.collider.gameObject)))
+                    UpdateStopAttribute(hit.Value);
+                }
+                else if (hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Green))
+                {
+                    if (WantToRight() && goingToTurn == "Right")
                     {
-                        UpdateStopAttribute(hit.Value);
+                        if (CheckIfThereIsCar(GetWallAcross(hit.Value.collider.gameObject)))
+                        {
+                            UpdateStopAttribute(hit.Value);
+                        }
+                        else
+                        {
+                            UpdateNormalAttribute();
+                        }
                     }
                     else
                     {
@@ -611,67 +634,67 @@ public class VehicleMovement : MonoBehaviour
                 }
                 else
                 {
-                    UpdateNormalAttribute();
+                    Debug.Log("Intersection4 Wrong Condition");
                 }
             }
-            else
+            else if (
+                hit.HasValue
+                && DoHitHaveLayer(hit.Value, "Invisible")
+                && Tag.CompareTags(hit.Value.collider.transform.parent.parent, Tag.Intersection_3_Small, Tag.Intersection_3_Large)
+                )
             {
-                Debug.Log("Intersection4 Wrong Condition");
-            }
-        }
-        else if (
-            hit.HasValue
-            && DoHitHaveLayer(hit.Value, "Invisible")
-            && Tag.CompareTags(hit.Value.collider.transform.parent.parent, Tag.Intersection_3_Small, Tag.Intersection_3_Large)
-            )
-        {
-            if (WantToRight())
-            {
-                if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_east)
+                if (WantToRight())
                 {
-                    // Check Anchor West
-                    if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)))
+                    if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_east)
                     {
-                        UpdateStopAttribute(hit.Value);
+                        // Check Anchor West
+                        if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)))
+                        {
+                            UpdateStopAttribute(hit.Value);
+                        }
+                        else
+                        {
+                            UpdateNormalAttribute();
+                        }
+                    }
+                    else if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_north)
+                    {
+                        if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)) || CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_east)))
+                        {
+                            UpdateStopAttribute(hit.Value);
+                        }
+                        else
+                        {
+                            UpdateNormalAttribute();
+                        }
                     }
                     else
                     {
                         UpdateNormalAttribute();
                     }
                 }
-                else if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_north)
+                else if (WantToLeft())
                 {
-                    if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)) || CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_east)))
-                    {
-                        UpdateStopAttribute(hit.Value);
-                    }
-                    else
+                    if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_west)
                     {
                         UpdateNormalAttribute();
+                    }
+                    else if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_north)
+                    {
+                        // Check Anchor West
+                        if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)))
+                        {
+                            UpdateStopAttribute(hit.Value);
+                        }
+                        else
+                        {
+                            UpdateNormalAttribute();
+                        }
                     }
                 }
                 else
                 {
                     UpdateNormalAttribute();
-                }
-            }
-            else if (WantToLeft())
-            {
-                if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_west)
-                {
-                    UpdateNormalAttribute();
-                }
-                else if (hit.Value.collider.gameObject.transform.parent.name == AnchorType.anchor_north)
-                {
-                    // Check Anchor West
-                    if (CheckIfThereIsCar(GetSpecificWall(hit.Value.collider.gameObject, AnchorType.anchor_west)))
-                    {
-                        UpdateStopAttribute(hit.Value);
-                    }
-                    else
-                    {
-                        UpdateNormalAttribute();
-                    }
                 }
             }
             else
@@ -679,10 +702,7 @@ public class VehicleMovement : MonoBehaviour
                 UpdateNormalAttribute();
             }
         }
-        else
-        {
-            UpdateNormalAttribute();
-        }
+        
 
         CarFollowingStimulusResponseModel(distanceBetween, nextObjectSpeed);
 
@@ -902,7 +922,9 @@ public class VehicleMovement : MonoBehaviour
     {
         navigator.CalculateWayPointsSync();
         movePoints = new List<Bezier.OrientedPoint>(navigator.CurrentPoints);
-        Bezier.OrientedPoint goal = new Bezier.OrientedPoint(goalObject.transform.position, Vector3.forward, Vector3.up);
+        Vector3 position = goalObject.gameObject.transform.position;
+        position.y = 0;
+        Bezier.OrientedPoint goal = new Bezier.OrientedPoint(position, Vector3.forward, Vector3.up);
         movePoints.Add(goal);
         //FilterMovePoints();
     }
@@ -962,6 +984,7 @@ public class VehicleMovement : MonoBehaviour
             int randomIndex = Random.Range(0, goalObjects.Length);
             goalObject = goalObjects[randomIndex];
         }
+        goalObject = GameObject.Find("Pejabat Pos KOMTAR");
         navigator.Goal = goalObject.transform.position;
     }
 

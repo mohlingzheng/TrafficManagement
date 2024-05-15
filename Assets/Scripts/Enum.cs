@@ -38,6 +38,7 @@ public static class Tag
     public static readonly string End_Small = "End_Small";
     public static readonly string End_Large = "End_Large";
     public static readonly string Bump = "Bump";
+    public static readonly string Transition_Wall = "Transition_Wall";
     public static readonly string Untagged = "Untagged";
 
     public static bool CompareTags(Transform target, params string[] tags)

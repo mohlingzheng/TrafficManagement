@@ -16,10 +16,8 @@ TagManager:
   - Transition
   - End_Small
   - End_Large
-  - Intersection3
-  - Road
-  - Intersection4
   - Bump
+  - Transition_Wall
   layers:
   - Default
   - TransparentFX

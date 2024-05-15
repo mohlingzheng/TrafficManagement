@@ -56,6 +56,7 @@ public class KomtarSceneManager : MonoBehaviour
             cameraController.enabled = false;
             EventSystem.current.SetSelectedGameObject(Ok.gameObject);
             this.enabled = false;
+            PauseTheScene();
         }
     }
 
