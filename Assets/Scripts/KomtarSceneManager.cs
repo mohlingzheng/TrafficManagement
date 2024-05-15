@@ -21,7 +21,7 @@ public class KomtarSceneManager : MonoBehaviour
     public GameObject PausePanel;
     public Button FirstButton;
     public int currentButton = 0;
-    float inputCooldown = 0.05f;
+    float inputCooldown = 0.1f;
     float lastInputTime = 0f;
     void Start()
     {
@@ -29,6 +29,7 @@ public class KomtarSceneManager : MonoBehaviour
         inputManager = FindAnyObjectByType<InputManager>();
         cameraController = FindAnyObjectByType<CameraController>();
         timeTrackingManager = FindAnyObjectByType<TimeTrackingManager>();
+        //Time.timeScale = 2f;
     }
 
     // Update is called once per frame

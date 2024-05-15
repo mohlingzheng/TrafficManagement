@@ -24,6 +24,7 @@ public class VehicleMovement : MonoBehaviour
     private float arriveThreshold = 5f;
     public float currentSpeed = 0f;
     public float desiredSpeed;
+    public float FixedDesiredSpeed;
     public float rotationSpeed = 10f;
     public Vector3 movingDirection;
     public VehicleType vehicleType;
@@ -40,6 +41,8 @@ public class VehicleMovement : MonoBehaviour
     public bool stopDueToTraffic;
     public bool laneJustChanged = false;
     public float laneChangingClock = 0f;
+    public string goingToTurn = "";
+    public Vector3 pointToTurn;
 
     [Header("Analysis")]
     public double timeWaited = 0f;
@@ -82,6 +85,7 @@ public class VehicleMovement : MonoBehaviour
         TimeTracking();
         RemoveOnUnexpectedPosition();
         UpdateMovePointReady();
+        //ReachDestination();
     }
 
     private void SetDesiredSpeed()
@@ -97,6 +101,7 @@ public class VehicleMovement : MonoBehaviour
             desiredSpeed = 50f;
             highSpeed = true;
         }
+        FixedDesiredSpeed = desiredSpeed;
     }
 
     private void UpdateMovePointReady()
@@ -147,11 +152,27 @@ public class VehicleMovement : MonoBehaviour
         }
         else if (currentRoadType == OnLanes.Large && GoingToTurnLeft())
         {
-            UpdateHighSpeed(false);
+            if (highSpeed)
+            {
+                // find chance to go to high speed lane
+                // if no chance, stop and wait
+                if (CheckLaneFeasible("Left"))
+                {
+                    UpdateHighSpeed(false);
+                }
+            }
         }
         else if (currentRoadType == OnLanes.Large && GoingToTurnRight())
         {
-            UpdateHighSpeed(true);
+            if (!highSpeed)
+            {
+                // find chance to go to high speed lane
+                // if no chance, stop and wait
+                if (CheckLaneFeasible("Right"))
+                {
+                    UpdateHighSpeed(true);
+                }
+            }
         }
         else if (currentRoadType == OnLanes.Large && !stopDueToTraffic)
         {
@@ -174,30 +195,32 @@ public class VehicleMovement : MonoBehaviour
 
     private bool GoingToTurnLeft()
     {
-        //if (Count)
-        //    return true;
-
         int gap = 5;
         for (int i = 0; i < movePoints.Count; i++)
         {
             if (i + gap > movePoints.Count - 1)
                 return false;
+            else if (goingToTurn != "" && CheckPositionInMovePoints())
+                return true;
+
             Vector3 delta = movePoints[i + gap].position - movePoints[i].position;
             Vector3 crossProduct = Vector3.Cross(delta, movePoints[i + 1].position - movePoints[i].position);
             dotProduct = Vector3.Dot(crossProduct, transform.up);
             if (dotProduct > 3.0f)
             {
-                //if (!Count)
-                //    Count = true;
-                //Debug.Log("Going to Turn Left");
                 float distance = Vector3.Distance(movePoints[i].position, transform.position);
                 if (distance < 60f)
                 {
-                    //Debug.Log(distance);
+                    pointToTurn = movePoints[i].position;
+                    goingToTurn = "Left";
                     return true;
                 }
-                else { return false; }
-                //return true;
+                else
+                {
+                    pointToTurn = new Vector3();
+                    goingToTurn = "";
+                    return false;
+                }
             }
         }
         return false;
@@ -205,51 +228,43 @@ public class VehicleMovement : MonoBehaviour
 
     private bool GoingToTurnRight()
     {
-        //if (Count)
-        //    return true;
-        //int index = 3;
-        //index = Mathf.Clamp(index, 0, movePoints.Count);
-        //if (movePoints.Count < index + 1)
-        //    return false;
-        //Vector3 delta = movePoints[index].position - transform.position;
-        //Vector3 crossProduct = Vector3.Cross(delta, transform.forward);
-        //dotProduct = Vector3.Dot(crossProduct, transform.up);
-        //if (dotProduct < -3.0f)
-        //{
-        //    if (!Count)
-        //        Count = true;
-        //    return true;
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-
-        //if (Count)
-        //    return true;
-
         int gap = 5;
         for (int i = 0; i < movePoints.Count; i++)
         {
             if (i + gap > movePoints.Count - 1)
                 return false;
+            else if (goingToTurn != "" && CheckPositionInMovePoints())
+                return true;
+
             Vector3 delta = movePoints[i + gap].position - movePoints[i].position;
             Vector3 crossProduct = Vector3.Cross(delta, movePoints[i + 1].position - movePoints[i].position);
             dotProduct = Vector3.Dot(crossProduct, transform.up);
             if (dotProduct < -3.0f)
             {
-                //if (!Count)
-                //    Count = true;
-                //Debug.Log("Going to Turn Right");
                 float distance = Vector3.Distance(movePoints[i].position, transform.position);
                 if (distance < 60f)
                 {
-                    //Debug.Log(distance);
+                    pointToTurn = movePoints[i].position;
+                    goingToTurn = "Right";
                     return true;
                 }
-                else { return false; }
-                //return true;
+                else 
+                {
+                    pointToTurn = new Vector3();
+                    goingToTurn = "";
+                    return false; 
+                }
             }
+        }
+        return false;
+    }
+
+    private bool CheckPositionInMovePoints()
+    {
+        for (int i = 0; i < movePoints.Count; i++)
+        {
+            if (movePoints[i].position == pointToTurn)
+                return true;
         }
         return false;
     }
@@ -492,14 +507,14 @@ public class VehicleMovement : MonoBehaviour
                 transform.rotation = Quaternion.Lerp(transform.rotation, rotation, rotationSpeed * Time.deltaTime);
             }
 
-            if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
-            {
-                if (gameObject.name != "Specific Vehicle 2" && gameObject.name != "Specific Vehicle")
-                {
-                    vehicleGeneration.ReduceVehicleCount(1);
-                }
-                Destroy(gameObject);
-            }
+            //if (Vector3.Distance(transform.position, goalObject.transform.position) < arriveThreshold)
+            //{
+            //    if (gameObject.name != "Specific Vehicle 2" && gameObject.name != "Specific Vehicle")
+            //    {
+            //        vehicleGeneration.ReduceVehicleCount(1);
+            //    }
+            //    Destroy(gameObject);
+            //}
         }
     }
 
@@ -562,6 +577,11 @@ public class VehicleMovement : MonoBehaviour
 
     public void HandleTypeRaycasthit(RaycastHit? hit)
     {
+        if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Bump))
+        {
+            currentSpeed = FixedDesiredSpeed / 2;
+        }
+
         if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle) && IsVehicleSameLane(hit.Value))
         {
             UpdateStopAttribute(hit.Value);
@@ -578,7 +598,7 @@ public class VehicleMovement : MonoBehaviour
             }
             else if (hit.Value.collider.gameObject.GetComponent<TrafficLightLogic>().IsSameLight(TrafficLightState.Green))
             {
-                if (WantToRight())
+                if (WantToRight() && goingToTurn == "Right")
                 {
                     if (CheckIfThereIsCar(GetWallAcross(hit.Value.collider.gameObject)))
                     {
@@ -740,8 +760,10 @@ public class VehicleMovement : MonoBehaviour
         return wall.transform.parent.parent.Find(anchor).Find("TrafficLightBlock").gameObject;
     }
 
-    private bool CheckIfThereIsCar(GameObject wall)
+    private bool CheckIfThereIsCar(GameObject wall, bool intersection4 = false)
     {
+        if (ProbabilityNotFollow())
+            return false;
         if (Tag.CompareTags(wall.transform.parent.parent.transform, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
         {
             RaycastHit hitLeft, hitRight;
@@ -753,7 +775,16 @@ public class VehicleMovement : MonoBehaviour
             if (Physics.Raycast(positionLeft, wall.transform.forward, out hitLeft, 30f))
             {
                 if (hitLeft.collider.transform.CompareTag("Vehicle"))
-                    return true;
+                {
+                    if (intersection4)
+                    {
+                        if (hitLeft.collider.transform.GetComponent<VehicleMovement>().goingToTurn != "Right")
+                            return true;
+                    }
+                    else
+                        return true;
+                }
+
             }
 
             Vector3 positionRight = wall.transform.position - wall.transform.forward * 10f;
@@ -764,7 +795,15 @@ public class VehicleMovement : MonoBehaviour
             if (Physics.Raycast(positionRight, wall.transform.forward, out hitRight, 30f))
             {
                 if (hitRight.collider.transform.CompareTag("Vehicle"))
-                    return true;
+                {
+                    if (intersection4)
+                    {
+                        if (hitRight.collider.transform.GetComponent<VehicleMovement>().goingToTurn != "Right")
+                            return true;
+                    }
+                    else
+                        return true;
+                }
             }
 
             return false;
@@ -822,9 +861,9 @@ public class VehicleMovement : MonoBehaviour
         return hit.collider.gameObject.layer == LayerMask.NameToLayer(layer);
     }
 
-    private bool ValueNearToZero(float value)
+    private bool ValueNearToZero(float value, float threshold = 0.001f)
     {
-        if (value < 0.001f && value > - 0.001f)
+        if (value < threshold && value > -threshold)
             return true;
         return false;
     }
@@ -934,6 +973,16 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
+    //private void OnTriggerEnter(Collider collision)
+    //{
+    //    Debug.Log("bs");
+    //    if (collision.gameObject == goalObject)
+    //    {
+    //        Debug.Log("b");
+    //        UpdateTimeAndDestroy(true);
+    //    }
+    //}
+
     private void RemoveOnUnexpectedPosition()
     {
         if (transform.position.y < -10f)
@@ -946,7 +995,13 @@ public class VehicleMovement : MonoBehaviour
     {
         if (normal)
         {
-            previousRoad.GetComponent<RoadTrafficDensity>().DecreaseCount();
+            if (previousRoad != null)
+            {
+                if (previousRoad.TryGetComponent<RoadTrafficDensity>(out RoadTrafficDensity roadTrafficDensity))
+                {
+                    roadTrafficDensity.DecreaseCount();
+                }
+            }
             timeTrackingManager.currentTotalTime += timeWaited;
         }
         vehicleGeneration.ReduceVehicleCount(1);
@@ -968,4 +1023,23 @@ public class VehicleMovement : MonoBehaviour
         }
     }
 
+    private void ReachDestination()
+    {
+        if (ProbabilityNotFollow())
+        {
+            if (ValueNearToZero(Vector3.Distance(transform.position, goalObject.transform.position), 1f))
+            {
+                UpdateTimeAndDestroy(true);
+            }
+        }
+    }
+
+    private bool ProbabilityNotFollow(int threshold = 5)
+    {
+        int num = Random.Range(0, 100);
+        if (num <= threshold)
+            return true;
+        else
+            return false;
+    }
 }

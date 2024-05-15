@@ -24,7 +24,7 @@ public class VehicleGeneration : MonoBehaviour
         VehiclePrefabs = Resources.LoadAll<GameObject>("Prefabs/Vehicle");
     }
 
-    void FixedUpdate()
+    void Update()
     {
         if (GenerateFixVehicle)
         {

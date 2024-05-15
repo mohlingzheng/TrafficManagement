@@ -19,6 +19,7 @@ TagManager:
   - Intersection3
   - Road
   - Intersection4
+  - Bump
   layers:
   - Default
   - TransparentFX

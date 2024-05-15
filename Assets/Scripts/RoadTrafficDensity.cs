@@ -9,6 +9,7 @@ public class RoadTrafficDensity : MonoBehaviour
     public float RoadLength = 0;
     public float TrafficDensity = 0;
     public bool HighTraffic = false;
+    public bool ShowIndicator = false;
     float divisor = 0;
     void Start()
     {
@@ -34,19 +35,29 @@ public class RoadTrafficDensity : MonoBehaviour
     private void TrafficDensityCalculationAndIndication()
     {
         TrafficDensity = NumberOfCars / RoadLength;
-        if (TrafficDensity > 0)
+        if (ShowIndicator)
         {
-            HighTraffic = true;
-            transform.GetComponent<Outline>().OutlineColor = Color.red;
-            transform.GetComponent<Outline>().enabled = true;
+            if (TrafficDensity >= 0.1f)
+            {
+                HighTraffic = true;
+                transform.GetComponent<Outline>().OutlineColor = Color.red;
+                transform.GetComponent<Outline>().enabled = true;
+            }
+            else if (TrafficDensity < 0.1f && HighTraffic)
+            {
+                HighTraffic = false;
+                transform.GetComponent<Outline>().OutlineColor = Color.white;
+                transform.GetComponent<Outline>().needsUpdate = true;
+                transform.GetComponent<Outline>().enabled = false;
+            }
         }
-        else if (TrafficDensity == 0 && HighTraffic)
+        else
         {
-            HighTraffic = false;
             transform.GetComponent<Outline>().OutlineColor = Color.white;
             transform.GetComponent<Outline>().needsUpdate = true;
             transform.GetComponent<Outline>().enabled = false;
         }
+
     }
 
     public void IncreaseCount()

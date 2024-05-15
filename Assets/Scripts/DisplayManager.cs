@@ -48,7 +48,10 @@ public class DisplayManager : MonoBehaviour
         if (Tag.CompareTags(gameObject.transform, Tag.Vehicle))
         {
             GetTextMeshProUI(detailsPanel, "ObjectType").text = gameObject.tag;
-            detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-car");
+            if (gameObject.GetComponent<VehicleMovement>().vehicleType == VehicleType.Light)
+                detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-car");
+            else
+                detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-truck");
             GetTextMeshProUI(detailsPanel, "Attribute1").text = "Destination: " + gameObject.GetComponent<VehicleMovement>().goalObject.name;
             GetTextMeshProUI(detailsPanel, "Attribute2").text = "Desired Speed: " + gameObject.GetComponent<VehicleMovement>().desiredSpeed.ToString("F2");
             GetTextMeshProUI(detailsPanel, "Attribute3").text = "Current Speed: " + gameObject.GetComponent<VehicleMovement>().currentSpeed.ToString("F2");

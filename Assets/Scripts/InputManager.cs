@@ -34,6 +34,7 @@ public class InputManager : MonoBehaviour
     [Header("Outline")]
     public Transform highlight;
     public Transform selection;
+    public bool Indicator = false;
 
     [Header("Road Building")]
     public Vector3 firstPoint = Vector3.zero;
@@ -69,17 +70,10 @@ public class InputManager : MonoBehaviour
         //}
     }
 
-    //public void YButtonInteractButton()
-    //{
-    //    if (pauseButton.IsActive())
-    //        ExecuteEvents.Execute(pauseButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-    //    else
-    //        ExecuteEvents.Execute(resumeButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
-    //}
-
     void ButtonInteraction()
     {
         HandleInputModeChange();
+        ToggleTrafficIndicator();
         GetRaycastPositionHit();
 
         GetRaycastObjectHit();
@@ -98,6 +92,24 @@ public class InputManager : MonoBehaviour
         }
 
         DeveloperInteraction();
+    }
+
+    private void ToggleTrafficIndicator()
+    {
+        if (Input.GetButtonDown("Y"))
+        {
+            Indicator = !Indicator;
+            GameObject[] road_larges = GameObject.FindGameObjectsWithTag(Tag.Road_Large);
+            GameObject[] road_smalls = GameObject.FindGameObjectsWithTag(Tag.Road_Small);
+            foreach (GameObject road in road_larges)
+            {
+                road.GetComponent<RoadTrafficDensity>().ShowIndicator = Indicator;
+            }
+            foreach (GameObject road in road_smalls)
+            {
+                road.GetComponent<RoadTrafficDensity>().ShowIndicator = Indicator;
+            }
+        }
     }
 
     private void GetInputForRemoveRoad()
