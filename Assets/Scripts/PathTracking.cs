@@ -50,7 +50,14 @@ public class PathTracking : MonoBehaviour
 
         for (int i = 0; i < vehicleMovement.movePoints.Count; i++)
         {
-            startPosition = vehicleMovement.movePoints[i].position;
+            Vector3 forwardDirection;
+            if (i == vehicleMovement.movePoints.Count-1)
+                forwardDirection = vehicleMovement.goalObject.transform.position - vehicleMovement.movePoints[i].position;
+            else
+                forwardDirection = vehicleMovement.movePoints[i + 1].position - vehicleMovement.movePoints[i].position;
+
+            Vector3 leftDirection = Vector3.Cross(Vector3.up, forwardDirection).normalized;
+            startPosition = vehicleMovement.movePoints[i].position + leftDirection * (OnLanes.GetValue(vehicleMovement.highSpeed ? OnLanes.High : OnLanes.Low));
             startPosition.y += 0.5f;
             lineRenderer.SetPosition(i + 1, startPosition);
         }

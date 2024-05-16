@@ -25,6 +25,8 @@ public class QueueingLogic : MonoBehaviour
     {
         while (true)
         {
+            if (Time.timeScale == 0)
+                continue;
             if (queue.Count > 0)
             {
                 Count = queue.Count;

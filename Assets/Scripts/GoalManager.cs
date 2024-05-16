@@ -14,11 +14,11 @@ public class GoalManager : MonoBehaviour
     public Collider testCollider;
     public Collider roadCollider;
     public GameObject Prefabs;
-    int count = 0;
+    //int count = 0;
 
     void Start()
     {
-        RemoveBoxCollider();
+        //RemoveBoxCollider();
         //testCollider = test.GetComponent<Collider>();
         //roadCollider = road.GetComponent<Collider>();
     }

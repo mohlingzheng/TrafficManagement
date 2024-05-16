@@ -17,7 +17,7 @@ public class KomtarSceneManager : MonoBehaviour
     public CameraController cameraController;
     public TimeTrackingManager timeTrackingManager;
     public float gameTime = 300f;
-    public static bool IsPaused = false;
+    public static bool IsPaused = true;
     public GameObject PausePanel;
     public Button FirstButton;
     public int currentButton = 0;
@@ -36,7 +36,9 @@ public class KomtarSceneManager : MonoBehaviour
     void Update()
     {
         HandlePauseCondition();
-        Timer();
+        //Debug.Log(IsPaused);
+        if (!IsPaused)
+            Timer();
     }
 
     private void Timer()
@@ -120,14 +122,14 @@ public class KomtarSceneManager : MonoBehaviour
     public void PauseTheScene()
     {
         IsPaused = true;
-        Time.timeScale = 0f;
+        Time.timeScale = TimeScale.stop;
         PausePanel.SetActive(true);
     }
 
     public void ResumeTheScene()
     {
         IsPaused = false;
-        Time.timeScale = 1.0f;
+        Time.timeScale = TimeScale.normal;
         PausePanel.SetActive(false);
     }
     

@@ -22,7 +22,7 @@ public class VehicleMovement : MonoBehaviour
     public bool isSelected = false;
 
     [Header("Vehicle Attribute")]
-    private float arriveThreshold = 5f;
+    //private float arriveThreshold = 5f;
     public float currentSpeed = 0f;
     public float desiredSpeed;
     public float FixedDesiredSpeed;
@@ -79,16 +79,19 @@ public class VehicleMovement : MonoBehaviour
         StartCoroutine(SetMovePointLoop());
     }
 
-    void FixedUpdate()
+    void Update()
     {
-        RemoveMovePointsWith90Degree();
-        DynamicSpeedLogic();
-        LaneChangingLogic();
-        MoveWithCurrentSpeed();
-        TimeTracking();
-        RemoveOnUnexpectedPosition();
-        UpdateMovePointReady();
-        //ReachDestination();
+        if (Time.timeScale != 0)
+        {
+            RemoveMovePointsWith90Degree();
+            DynamicSpeedLogic();
+            LaneChangingLogic();
+            MoveWithCurrentSpeed();
+            TimeTracking();
+            RemoveOnUnexpectedPosition();
+            UpdateMovePointReady();
+            //ReachDestination();
+        }
     }
 
     private void SetDesiredSpeed()
@@ -101,7 +104,7 @@ public class VehicleMovement : MonoBehaviour
             Debug.Log("No Vehicle Type Specified");
         if (transform.name == "Specific Vehicle")
         {
-            desiredSpeed = 50f;
+            desiredSpeed = 20f;
             highSpeed = true;
         }
         FixedDesiredSpeed = desiredSpeed;

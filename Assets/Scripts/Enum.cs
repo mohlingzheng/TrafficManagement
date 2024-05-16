@@ -104,3 +104,11 @@ public static class AnchorType
     public static readonly string anchor_south = "Anchor South";
     public static readonly string anchor_west = "Anchor West";
 }
+
+public static class TimeScale
+{
+    public static readonly float stop = 0f;
+    public static readonly float normal = 1.0f;
+    public static readonly float fast = 2.0f;
+    public static readonly float very_fast = 5.0f;
+}

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class GraphManager : MonoBehaviour
 {
@@ -46,13 +47,17 @@ public class GraphManager : MonoBehaviour
         {
             originalTimes.Add(UnityEngine.Random.Range(1, 15));
         }
-        modifiedTimes = TimeTrackingManager.TimeWaitedPeriod;
-        if (modifiedTimes.Count == 0)
+
+        if (TimeTrackingManager.TimeWaitedPeriod.Count == 0)
         {
             for (int i = 0; i < 103; i++)
             {
                 modifiedTimes.Add(UnityEngine.Random.Range(1, 15));
             }
+        }
+        else
+        {
+            modifiedTimes = TimeTrackingManager.TimeWaitedPeriod;
         }
 
         SetupAxis();
@@ -72,12 +77,42 @@ public class GraphManager : MonoBehaviour
         SetCoordinateLabel(modifiedLineRenderer, processedModifiedTimes);
 
         SetupAxisLabel();
+
+        ExportResult();
     }
 
     void Update()
     {
         SetupAxis();
 
+    }
+
+    private void ExportResult()
+    {
+        int i = 1;
+        string filePath = "Assets/Resources/Data/data" + i + ".txt";
+
+        while (true)
+        {
+            if (!File.Exists(filePath))
+            {
+                using (StreamWriter writer = new System.IO.StreamWriter(filePath))
+                {
+                    foreach (var data in modifiedTimes)
+                    {
+                        writer.WriteLine(data);
+                    }
+                }
+
+                Debug.Log("Data has been written to the file.");
+                break;
+            }
+            else
+            {
+                i++;
+                filePath = "Assets/Resources/Data/data" + i + ".txt";
+            }
+        }
     }
 
     private void OnDrawGizmos()

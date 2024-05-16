@@ -25,6 +25,7 @@ public class InputManager : MonoBehaviour
     [Header("Canvas")]
     public GameObject roadBuildingPanel;
     public GameObject buttonPanel;
+    public GameObject congestionPanel;
     public Button SelectButton;
 
     [Header("Raycast")]
@@ -108,6 +109,15 @@ public class InputManager : MonoBehaviour
             foreach (GameObject road in road_smalls)
             {
                 road.GetComponent<RoadTrafficDensity>().ShowIndicator = Indicator;
+            }
+            Image image = congestionPanel.transform.Find("Congestion").Find("Image").GetComponent<Image>();
+            if (Indicator == false)
+            {
+                image.sprite = Resources.Load<Sprite>("Icons/congestion-off");
+            }
+            else
+            {
+                image.sprite = Resources.Load<Sprite>("Icons/congestion-on");
             }
         }
     }
