@@ -112,3 +112,10 @@ public static class TimeScale
     public static readonly float fast = 2.0f;
     public static readonly float very_fast = 5.0f;
 }
+
+public static class WeightConstant
+{
+    public static readonly float TrafficDensityMin = 0f;
+    public static readonly float TrafficDensityMax = 0.089f;
+    public static readonly float TrafficDensityCoefficient = 102.498f;
+}

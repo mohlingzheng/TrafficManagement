@@ -613,7 +613,7 @@ public class InputManager : MonoBehaviour
 
     }
 
-    private void PathFindingRecalculate()
+    public void PathFindingRecalculate()
     {
         //float time = 0;
         //while (time < 3)

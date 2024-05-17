@@ -96,6 +96,9 @@ public class VehicleMovement : MonoBehaviour
 
     private void SetDesiredSpeed()
     {
+        //if (name == "Vehicle")
+        //    desiredSpeed = 20f;
+
         if (vehicleType == VehicleType.Light)
             desiredSpeed = Random.Range(15, 25);
         else if (vehicleType == VehicleType.Heavy)
@@ -980,7 +983,12 @@ public class VehicleMovement : MonoBehaviour
         GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
         if (gameObject.name == "Specific Vehicle" || gameObject.name == "Specific Vehicle 2")
         {
-            goalObject = GameObject.Find("NBL Money Transfer Sdn Bhd");
+            if (GameObject.Find("Pejabat Pos KOMTAR") != null)
+            {
+                goalObject = GameObject.Find("Pejabat Pos KOMTAR");
+            }
+            else
+                goalObject = GameObject.Find("NBL Money Transfer Sdn Bhd");
         }
         else if (goalObjects.Length > 0)
         {
@@ -988,6 +996,7 @@ public class VehicleMovement : MonoBehaviour
             goalObject = goalObjects[randomIndex];
         }
         goalObject = GameObject.Find("Pejabat Pos KOMTAR");
+        //goalObject = GameObject.Find("EndIntersection");
         navigator.Goal = goalObject.transform.position;
     }
 

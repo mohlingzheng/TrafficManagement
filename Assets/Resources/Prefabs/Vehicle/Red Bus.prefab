@@ -138,6 +138,7 @@ MonoBehaviour:
   laneChangingClock: 0
   goingToTurn: 
   pointToTurn: {x: 0, y: 0, z: 0}
+  SeeingTransitionWall: 0
   timeWaited: 0
   timeTrackingManager: {fileID: 0}
   rayDistance: 10

@@ -76,9 +76,9 @@ public class DisplayManager : MonoBehaviour
         {
             GetTextMeshProUI(detailsPanel, "ObjectType").text = "Road";
             detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-road");
-            GetTextMeshProUI(detailsPanel, "Attribute1").text = "Road Length: " + gameObject.GetComponent<Barmetler.RoadSystem.RoadTrafficDensity>().RoadLength.ToString("F2");
-            GetTextMeshProUI(detailsPanel, "Attribute2").text = "No. Of Vehicles: " + gameObject.GetComponent<Barmetler.RoadSystem.RoadTrafficDensity>().NumberOfCars.ToString("F2");
-            GetTextMeshProUI(detailsPanel, "Attribute3").text = "Traffic Density: " + gameObject.GetComponent<Barmetler.RoadSystem.RoadTrafficDensity>().TrafficDensity.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute1").text = "Road Length: " + gameObject.GetComponent<RoadTrafficDensity>().RoadLength.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute2").text = "No. Of Vehicles: " + gameObject.GetComponent<RoadTrafficDensity>().NumberOfCars.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute3").text = "Traffic Density: " + gameObject.GetComponent<RoadTrafficDensity>().TrafficDensity.ToString("F2");
             lastEnabledAttribute = detailsPanel.transform.Find("Attributes").Find("Attribute3").gameObject;
             GetTextMeshProUI(detailsPanel, "Attribute1").enabled = true;
             GetTextMeshProUI(detailsPanel, "Attribute2").enabled = true;
