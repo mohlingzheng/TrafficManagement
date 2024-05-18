@@ -445,7 +445,7 @@ Transform:
   m_GameObject: {fileID: 100010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 856.9, y: -0.000058174133, z: 159}
+  m_LocalPosition: {x: 856.9, y: 0.15, z: 159}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -488,6 +488,8 @@ MonoBehaviour:
   goalObject: {fileID: 0}
   vehicleGeneration: {fileID: 0}
   movePointReady: 0
+  ObjectInFront: {fileID: 0}
+  StopByThis: 0
   isSelected: 0
   currentSpeed: 0
   desiredSpeed: 0
@@ -536,8 +538,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.9231262, y: 2.0394661, z: 7.1390133}
-  m_Center: {x: 0.04890442, y: 1.2659405, z: -0.019719303}
+  m_Size: {x: 2.9231262, y: 2.0394661, z: 7.417921}
+  m_Center: {x: 0.04890442, y: 1.2659405, z: -0.15917301}
 --- !u!54 &470379817961105266
 Rigidbody:
   m_ObjectHideFlags: 0

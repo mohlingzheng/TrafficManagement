@@ -668,7 +668,7 @@ GameObject:
   - component: {fileID: 751531488}
   - component: {fileID: 751531487}
   m_Layer: 5
-  m_Name: SettingButton
+  m_Name: SoundButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -737,7 +737,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 751531488}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 766912506}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
+        m_MethodName: ToggleSound
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &751531488
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -830,6 +842,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   StartButton: {fileID: 1852025799}
+  audioSource: {fileID: 0}
+  fixedVolume: 0.2
 --- !u!114 &766912507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1094,7 +1108,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: SETTINGS
+  m_text: SOUND
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 98af57aca89960446a5220e52eb452cb, type: 2}
   m_sharedMaterial: {fileID: 6408126046307627367, guid: 98af57aca89960446a5220e52eb452cb, type: 2}

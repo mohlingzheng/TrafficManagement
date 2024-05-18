@@ -3,6 +3,8 @@ using Barmetler.RoadSystem;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,6 +18,8 @@ public class VehicleMovement : MonoBehaviour
     public GameObject goalObject;
     public VehicleGeneration vehicleGeneration;
     public bool movePointReady = false;
+    public GameObject ObjectInFront;
+    public bool StopByThis = false;
     //public GameObject SpecificGoal;
 
     [Header("Pathfinding")]
@@ -71,17 +75,17 @@ public class VehicleMovement : MonoBehaviour
     void Start()
     {
         navigator = GetComponent<RoadSystemNavigator>();
-        navigator.currentRoadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
-        vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
         timeTrackingManager = FindAnyObjectByType<TimeTrackingManager>();
-        SetDesiredSpeed();
+        vehicleGeneration = FindAnyObjectByType<VehicleGeneration>();
+        navigator.currentRoadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
         SetRandomGoal();
+        SetDesiredSpeed();
         StartCoroutine(SetMovePointLoop());
     }
 
     void Update()
     {
-        if (Time.timeScale != 0)
+        if (!KomtarSceneManager.IsPaused)
         {
             RemoveMovePointsWith90Degree();
             DynamicSpeedLogic();
@@ -100,7 +104,7 @@ public class VehicleMovement : MonoBehaviour
         //    desiredSpeed = 20f;
 
         if (vehicleType == VehicleType.Light)
-            desiredSpeed = Random.Range(15, 25);
+            desiredSpeed = Random.Range(15, 20);
         else if (vehicleType == VehicleType.Heavy)
             desiredSpeed = Random.Range(10, 15);
         else
@@ -110,6 +114,7 @@ public class VehicleMovement : MonoBehaviour
             desiredSpeed = 20f;
             highSpeed = true;
         }
+        desiredSpeed = Random.Range(15, 20);
         FixedDesiredSpeed = desiredSpeed;
     }
 
@@ -139,6 +144,25 @@ public class VehicleMovement : MonoBehaviour
     //    }
     //}
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        //if (Tag.CompareTags(other.transform, Tag.Vehicle))
+        //    currentSpeed = 0;
+
+        if (collision.gameObject == goalObject)
+        {
+
+            UpdateTimeAndDestroy(true);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject == goalObject)
+        {
+            UpdateTimeAndDestroy(true);
+        }
+    }
 
     private void TimeTracking()
     {
@@ -298,6 +322,12 @@ public class VehicleMovement : MonoBehaviour
         position.y += 0.5f;
         if (Physics.Raycast(position, Vector3.down, out hit, 2f))
         {
+            if (hit.collider.transform.parent != null)
+            {
+                if (hit.collider.transform.parent.gameObject == goalObject)
+                    UpdateTimeAndDestroy();
+            }
+
             if (Tag.CompareTags(hit.collider.transform, Tag.Road_Small))
             {
                 currentRoadType = OnLanes.Small;
@@ -535,7 +565,7 @@ public class VehicleMovement : MonoBehaviour
         distanceDetect = distanceBetween;
         float c1 = 1.0f;
         float c2 = 1.0f;
-        float gamma = 1f;
+        float gamma = 1.0f;
         float safeDistance = 0f;
 
         distanceBetween = distanceBetween - safeDistance;
@@ -546,7 +576,7 @@ public class VehicleMovement : MonoBehaviour
 
         //currentAcceleration = desiredSpeed / distanceBetween * relativeSpeed;
 
-        currentSpeed += currentAcceleration * Time.fixedDeltaTime;
+        currentSpeed += currentAcceleration * Time.deltaTime;
     }
 
     public RaycastHit? CheckObjectInfront()
@@ -589,6 +619,9 @@ public class VehicleMovement : MonoBehaviour
 
     public void HandleTypeRaycasthit(RaycastHit? hit)
     {
+        if (hit.HasValue)
+            ObjectInFront = hit.Value.collider.gameObject;
+
         if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Bump))
         {
             currentSpeed = FixedDesiredSpeed / 2;
@@ -708,7 +741,13 @@ public class VehicleMovement : MonoBehaviour
                 UpdateNormalAttribute();
             }
         }
-        
+
+        if (hit.HasValue && Tag.CompareTags(hit.Value.collider.transform, Tag.Vehicle) && IsVehicleSameLane(hit.Value))
+        {
+            StopByThis = true;
+        }
+        else
+            StopByThis = false;
 
         CarFollowingStimulusResponseModel(distanceBetween, nextObjectSpeed);
 
@@ -980,7 +1019,12 @@ public class VehicleMovement : MonoBehaviour
 
     public void SetRandomGoal()
     {
-        GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal");
+        if (goalObject != null)
+        {
+            navigator.Goal = goalObject.transform.position;
+            return;
+        }
+        GameObject[] goalObjects = GameObject.FindGameObjectsWithTag("Goal").Concat(GetEndPointObject()).ToArray();
         if (gameObject.name == "Specific Vehicle" || gameObject.name == "Specific Vehicle 2")
         {
             if (GameObject.Find("Pejabat Pos KOMTAR") != null)
@@ -995,17 +1039,27 @@ public class VehicleMovement : MonoBehaviour
             int randomIndex = Random.Range(0, goalObjects.Length);
             goalObject = goalObjects[randomIndex];
         }
-        goalObject = GameObject.Find("Pejabat Pos KOMTAR");
+        //goalObject = GameObject.Find("Pejabat Pos KOMTAR");
         //goalObject = GameObject.Find("EndIntersection");
         navigator.Goal = goalObject.transform.position;
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private GameObject[] GetEndPointObject()
     {
-        if (collision.gameObject == goalObject)
+        List<GameObject> finalEndPoint = new List<GameObject>(); 
+        GameObject[] endLarges = GameObject.FindGameObjectsWithTag(Tag.End_Large);
+        GameObject[] endSmalls = GameObject.FindGameObjectsWithTag(Tag.End_Small);
+        foreach (GameObject gameObject in endLarges)
         {
-            UpdateTimeAndDestroy(true);
+            if (gameObject.GetComponent<Endpoint>().IsEndPoint)
+                finalEndPoint.Add(gameObject);
         }
+        foreach (GameObject gameObject in endSmalls)
+        {
+            if (gameObject.GetComponent<Endpoint>().IsEndPoint)
+                finalEndPoint.Add(gameObject);
+        }
+        return finalEndPoint.ToArray();
     }
 
     //private void OnTriggerEnter(Collider collision)
@@ -1038,6 +1092,7 @@ public class VehicleMovement : MonoBehaviour
                 }
             }
             timeTrackingManager.currentTotalTime += timeWaited;
+            TimeTrackingManager.VehicleReached++;
         }
         vehicleGeneration.ReduceVehicleCount(1);
         Destroy(gameObject);

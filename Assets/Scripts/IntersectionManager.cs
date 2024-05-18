@@ -191,7 +191,7 @@ public class IntersectionManager : MonoBehaviour
             yield return new WaitForSeconds(6f);
 
             currentState = Empty;
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(6f);
 
             currentState = EastWest;
             yield return new WaitForSeconds(6f);

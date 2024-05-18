@@ -169,6 +169,17 @@ public class InputManager : MonoBehaviour
             PathFindingRecalculate();
         }
 
+        if (Input.GetButtonDown("LS_B"))
+        {
+            Debug.Log("Toggle Dynamic Weight Update");
+            GameObject.Find("DynamicRoadSystemWeight").GetComponent<DynamicRoadSystemWeight>().ToggleDynamic();
+        }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            Time.timeScale = 2f;
+        }
+
     }
 
     public void GetRaycastObjectHit()
@@ -485,6 +496,7 @@ public class InputManager : MonoBehaviour
             secondAnchor = roadBuildingManager.CreatePreviewIntersection(roadSystem.gameObject, secondSelectedGameObject.transform.parent.gameObject, secondPoint, BuildMode.Actual);
 
         roadBuildingManager.ConnectTwoIntersections(roadSystem.gameObject, firstAnchor, secondAnchor, BuildMode.Actual);
+        yield return new WaitForSecondsRealtime(0.01f);
         //ResetUponRoadModification();
         roadBuildingManager.RebuildAffectedRoad();
         roadSystem.ConstructGraph();

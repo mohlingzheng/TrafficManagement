@@ -7,7 +7,7 @@ public class DynamicRoadSystemWeight : MonoBehaviour
 {
     public RoadSystem roadSystem;
     public InputManager inputManager;
-    public bool Dynamic = false;
+    public bool IsDynamic = false;
     
     void Start()
     {
@@ -20,12 +20,17 @@ public class DynamicRoadSystemWeight : MonoBehaviour
         
     }
 
+    public void ToggleDynamic()
+    {
+        IsDynamic = !IsDynamic;
+    }
+
     IEnumerator UpdateRoadSystemWeight()
     {
         while (true)
         {
             yield return new WaitForSeconds(10f);
-            if (Dynamic)
+            if (IsDynamic)
             {
                 roadSystem.ConstructGraph();
                 inputManager.PathFindingRecalculate();

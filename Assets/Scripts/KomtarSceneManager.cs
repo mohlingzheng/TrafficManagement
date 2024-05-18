@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -21,6 +23,7 @@ public class KomtarSceneManager : MonoBehaviour
     public GameObject PausePanel;
     public Button FirstButton;
     public int currentButton = 0;
+    public bool PauseByMenu = false;
     float inputCooldown = 0.1f;
     float lastInputTime = 0f;
     void Start()
@@ -36,7 +39,6 @@ public class KomtarSceneManager : MonoBehaviour
     void Update()
     {
         HandlePauseCondition();
-        //Debug.Log(IsPaused);
         if (!IsPaused)
             Timer();
     }
@@ -57,8 +59,37 @@ public class KomtarSceneManager : MonoBehaviour
             inputManager.enabled = false;
             cameraController.enabled = false;
             EventSystem.current.SetSelectedGameObject(Ok.gameObject);
+            SaveData();
+            PauseTheScene(false, true);
+            Time.timeScale = TimeScale.normal;
+            //#if UNITY_EDITOR
+            //    EditorApplication.isPlaying = false;
+            //    Debug.Log("Play mode stopped.");
+            //#endif
             this.enabled = false;
-            PauseTheScene();
+        }
+    }
+
+    private void SaveData()
+    {
+        string filePath = "Assets/Resources/Data/WaitedTime.txt";
+        if (File.Exists(filePath))
+        {
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                for (int i = 0; i < TimeTrackingManager.TimeWaitedPeriod.Count; i++)
+                {
+                    writer.WriteLine(TimeTrackingManager.TimeWaitedPeriod[i]);
+                }
+                writer.WriteLine(timeTrackingManager.TotalTimeWaited);
+                writer.WriteLine(TimeTrackingManager.VehicleReached);
+            }
+
+            Debug.Log("Data has been written to the file.");
+        }
+        else
+        {
+            Debug.Log("Nothing Written");
         }
     }
 
@@ -68,13 +99,16 @@ public class KomtarSceneManager : MonoBehaviour
         {
             if (!IsPaused)
             {
-                PauseTheScene();
+                PauseTheScene(true, true);
             }
             else
             {
-                ResumeTheScene();
+                ResumeTheScene(true);
             }
         }
+
+        if (!PauseByMenu)
+            return;
 
         if (IsPaused)
         {
@@ -114,23 +148,27 @@ public class KomtarSceneManager : MonoBehaviour
             }
             else if (Input.GetButtonDown("B"))
             {
-                ResumeTheScene();
+                ResumeTheScene(true);
             }
         }
     }
 
-    public void PauseTheScene()
+    public void PauseTheScene(bool SetPanel = true, bool pauseByMenu = false)
     {
+        PauseByMenu = pauseByMenu;
         IsPaused = true;
         Time.timeScale = TimeScale.stop;
-        PausePanel.SetActive(true);
+        if (SetPanel)
+            PausePanel.SetActive(true);
     }
 
-    public void ResumeTheScene()
+    public void ResumeTheScene(bool SetPanel = true)
     {
+        PauseByMenu = false;
         IsPaused = false;
         Time.timeScale = TimeScale.normal;
-        PausePanel.SetActive(false);
+        if (SetPanel)
+            PausePanel.SetActive(false);
     }
     
     private void UpdateButtonsColor(int currentButton)

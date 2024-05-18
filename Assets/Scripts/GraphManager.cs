@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
 using TMPro;
+using UnityEditor;
 
 public class GraphManager : MonoBehaviour
 {
@@ -35,6 +36,8 @@ public class GraphManager : MonoBehaviour
     float CoordinateMinorDisplacement = 4f;
 
     [Header("Result Value")]
+    public int originalVehicle = 0;
+    public int modifiedVehicle = 0;
     public double OriginalSumWaitingTime;
     public double ModifiedSumWaitingTime;
 
@@ -43,30 +46,16 @@ public class GraphManager : MonoBehaviour
         baseOrigin = new Vector3(-310, -140, 386);
         Width = 420f;
         Height = 170f;
-        for (int i = 0; i < 103; i++)
-        {
-            originalTimes.Add(UnityEngine.Random.Range(1, 15));
-        }
 
-        if (TimeTrackingManager.TimeWaitedPeriod.Count == 0)
-        {
-            for (int i = 0; i < 103; i++)
-            {
-                modifiedTimes.Add(UnityEngine.Random.Range(1, 15));
-            }
-        }
-        else
-        {
-            modifiedTimes = TimeTrackingManager.TimeWaitedPeriod;
-        }
+        LoadOriginalWaitTime();
+        LoadModifiedWaitTime();
 
         SetupAxis();
 
-        GroupTimesInto10Entries(originalTimes, processedOriginalTimes);
-        GroupTimesInto10Entries(modifiedTimes, processedModifiedTimes);
+        GroupTimesInto10Entries(originalTimes, processedOriginalTimes, true);
+        GroupTimesInto10Entries(modifiedTimes, processedModifiedTimes, true);
 
-        SetupGraphDimension(processedOriginalTimes, positionOriginalTimes);
-        SetupGraphDimension(processedModifiedTimes, positionModifiedTimes);
+        SetupGraphDimensionForBoth();
 
         DrawPositionTimes(originalLineRenderer, positionOriginalTimes);
         DrawPositionTimes(modifiedLineRenderer, positionModifiedTimes);
@@ -76,15 +65,56 @@ public class GraphManager : MonoBehaviour
         SetCoordinateLabel(originalLineRenderer, processedOriginalTimes);
         SetCoordinateLabel(modifiedLineRenderer, processedModifiedTimes);
 
-        SetupAxisLabel();
+        SetupAxisLabel(true);
 
-        ExportResult();
+        //ExportResult();
     }
 
     void Update()
     {
         SetupAxis();
+    }
 
+    private void LoadOriginalWaitTime()
+    {
+        string filePath = "Assets/Resources/Database/waitedtime.txt";
+        if (File.Exists(filePath))
+        {
+            string[] lines = File.ReadAllLines(filePath);
+            if (lines.Length == 0)
+            {
+                Debug.Log("Content is empty");
+                return;
+            }
+            for (int i = 0; i < lines.Length - 1; i++)
+            {
+                originalTimes.Add((double)(float.Parse(lines[i].Trim())));
+            }
+            originalVehicle = int.Parse(lines[lines.Length - 1].Trim());
+        }
+        else
+        {
+            Debug.Log("File does not exist.");
+        }
+    }
+
+
+    private void LoadModifiedWaitTime()
+    {
+        if (TimeTrackingManager.TimeWaitedPeriod.Count == 0)
+        {
+            Debug.Log("Use Random Value");
+            for (int i = 0; i < 103; i++)
+            {
+                modifiedTimes.Add(UnityEngine.Random.Range(1, 15));
+            }
+            modifiedVehicle = UnityEngine.Random.Range(0, 200);
+        }
+        else
+        {
+            modifiedTimes = TimeTrackingManager.TimeWaitedPeriod;
+            modifiedVehicle = TimeTrackingManager.VehicleReached;
+        }
     }
 
     private void ExportResult()
@@ -115,19 +145,19 @@ public class GraphManager : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
+    private void SetupAxisLabel(bool fix = false)
     {
-        //for (int i = 0; i < lineRenderer.positionCount; i++)
-        //{
-        //    Gizmos.color = Color.green;
-        //    Gizmos.DrawSphere(lineRenderer.GetPosition(i), 2f);
-        //}
-    }
+        int NumPerGroup;
+        if (!fix)
+        {
+            NumPerGroup = Mathf.FloorToInt(originalTimes.Count / numberOfGroup);
+        }
+        else
+        {
+            NumPerGroup = 6;
+        }
 
-    private void SetupAxisLabel()
-    {
         int capturePerEntries = 5;
-        int NumPerGroup = Mathf.FloorToInt(originalTimes.Count / numberOfGroup);
         float increase = capturePerEntries * NumPerGroup;
         Transform x_axisLabel = transform.Find("X-axis-label");
         for (int i = 0; i < numberOfGroup; i++)
@@ -137,9 +167,10 @@ public class GraphManager : MonoBehaviour
             Vector3 position = originalLineRenderer.GetPosition(i);
             position.y = -140 - CoordinateMinorDisplacement;
             coordinate.transform.position = position;
-            float value = increase * i;
+            float value = increase * (i + 1);
             coordinate.GetComponent<TextMeshProUGUI>().text = value.ToString("F0");
         }
+
 
         //double highestValue = GetHighestFromList(processedModifiedTimes);
         //float valuegap = 30f;
@@ -273,17 +304,37 @@ public class GraphManager : MonoBehaviour
             return true;
     }
 
-    private void GroupTimesInto10Entries(List<double> timeList, List<double> processedList)
+    private void GroupTimesInto10Entries(List<double> timeList, List<double> processedList, bool fix = false)
     {
-        int NumPerGroup = Mathf.FloorToInt(timeList.Count / numberOfGroup);
-        for (int i=0; i < numberOfGroup; i++)
+        if (!fix)
         {
-            double total = 0;
-            for (int j = 0; j < NumPerGroup; j++)
+            int NumPerGroup = Mathf.FloorToInt(timeList.Count / numberOfGroup);
+            for (int i = 0; i < numberOfGroup; i++)
             {
-                total += timeList[i * NumPerGroup + j];
+                double total = 0;
+                for (int j = 0; j < NumPerGroup; j++)
+                {
+                    total += timeList[i * NumPerGroup + j];
+                }
+                processedList.Add(total);
             }
-            processedList.Add(total);
+        }
+        else
+        {
+            int NumPerGroup = 6;
+            int count = 0;
+            double total = 0;
+            for (int i = 0; i < timeList.Count; i++)
+            {
+                total += timeList[i];
+                count++;
+                if (count == NumPerGroup || i == timeList.Count - 1)
+                {
+                    processedList.Add(total);
+                    total = 0;
+                    count = 0;
+                }
+            }
         }
     }
 
@@ -293,6 +344,21 @@ public class GraphManager : MonoBehaviour
         for (int i = 0; i < processedList.Count; i++)
         {
             positionList.Add((processedList[i] / highest) * (Height - TopPadding));
+        }
+    }
+
+    private void SetupGraphDimensionForBoth()
+    {
+        double highestOriginal = GetHighestFromList(processedOriginalTimes);
+        double highestModified = GetHighestFromList(processedModifiedTimes);
+        double highest = highestOriginal > highestModified ? highestOriginal : highestModified;
+        for (int i = 0; i < processedOriginalTimes.Count; i++)
+        {
+            positionOriginalTimes.Add((processedOriginalTimes[i] / highest) * (Height - TopPadding));
+        }
+        for (int i = 0; i < processedModifiedTimes.Count; i++)
+        {
+            positionModifiedTimes.Add((processedModifiedTimes[i] / highest) * (Height - TopPadding));
         }
     }
 

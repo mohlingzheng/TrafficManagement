@@ -77,13 +77,14 @@ public class DisplayManager : MonoBehaviour
             GetTextMeshProUI(detailsPanel, "ObjectType").text = "Road";
             detailsPanel.transform.Find("IconName").Find("Icon").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icons/3d-road");
             GetTextMeshProUI(detailsPanel, "Attribute1").text = "Road Length: " + gameObject.GetComponent<RoadTrafficDensity>().RoadLength.ToString("F2");
-            GetTextMeshProUI(detailsPanel, "Attribute2").text = "No. Of Vehicles: " + gameObject.GetComponent<RoadTrafficDensity>().NumberOfCars.ToString("F2");
+            GetTextMeshProUI(detailsPanel, "Attribute2").text = "No. Of Vehicles: " + gameObject.GetComponent<RoadTrafficDensity>().NumberOfCars.ToString("F0");
             GetTextMeshProUI(detailsPanel, "Attribute3").text = "Traffic Density: " + gameObject.GetComponent<RoadTrafficDensity>().TrafficDensity.ToString("F2");
-            lastEnabledAttribute = detailsPanel.transform.Find("Attributes").Find("Attribute3").gameObject;
+            GetTextMeshProUI(detailsPanel, "Attribute4").text = "Weightage: " + gameObject.GetComponent<RoadTrafficDensity>().WeightValue.ToString("F2");
+            lastEnabledAttribute = detailsPanel.transform.Find("Attributes").Find("Attribute4").gameObject;
             GetTextMeshProUI(detailsPanel, "Attribute1").enabled = true;
             GetTextMeshProUI(detailsPanel, "Attribute2").enabled = true;
             GetTextMeshProUI(detailsPanel, "Attribute3").enabled = true;
-            GetTextMeshProUI(detailsPanel, "Attribute4").enabled = false;
+            GetTextMeshProUI(detailsPanel, "Attribute4").enabled = true;
         }
         else
         {
@@ -97,7 +98,7 @@ public class DisplayManager : MonoBehaviour
         {
             newHeight = newHeight +
                lastEnabledAttribute.GetComponent<RectTransform>().sizeDelta.y +
-               lastEnabledAttribute.GetComponent<RectTransform>().localPosition.y * -1;
+               lastEnabledAttribute.GetComponent<RectTransform>().localPosition.y * -1 + 20f;
         }
         else
         {
@@ -133,14 +134,14 @@ public class DisplayManager : MonoBehaviour
     public void ShowLoadingPanel()
     {
         canvas.transform.Find("LoadingPanel").gameObject.SetActive(true);
-        Debug.Log("Showing");
+        //Debug.Log("Showing");
         //Time.timeScale = 0f;
     }
 
     public void HideLoadingPanel()
     {
         canvas.transform.Find("LoadingPanel").gameObject.SetActive(false);
-        Debug.Log("Showing un");
+        //Debug.Log("Showing un");
         //Time.timeScale = 1.0f;
     }
 

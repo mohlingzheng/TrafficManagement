@@ -37,8 +37,7 @@ public class TutorialManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Time.timeScale = TimeScale.stop;
-        KomtarSceneManager.IsPaused = true;
+        KomtarSceneManager.PauseTheScene(false);
         currentStep = 0;
         TutorialPanel.SetActive(true);
     }
@@ -46,6 +45,7 @@ public class TutorialManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        KomtarSceneManager.IsPaused = true;
         DisplayAccordingToStep();
         ButtonInteractionAccordingToStep();
     }
@@ -226,8 +226,8 @@ public class TutorialManager : MonoBehaviour
         VehicleGeneration.enabled = true;
         KomtarSceneManager.enabled = true;
         TimeTrackingManager.enabled = true;
-        Time.timeScale = TimeScale.normal;
-        KomtarSceneManager.IsPaused = false;
+        KomtarSceneManager.ResumeTheScene();
+        this.enabled = false;
     }
 
     private bool CheckStep(int step)

@@ -8,14 +8,15 @@ public class TimeTrackingManager : MonoBehaviour
     public double TotalTimeWaited = 0f;
     public static List<double> TimeWaitedPeriod = new List<double>();
     public double currentTotalTime = 0f;
-    // Start is called before the first frame update
+    public static int VehicleReached = 0;
+
     void Start()
     {
         TimeWaitedPeriod.Clear();
+        VehicleReached = 0;
         StartCoroutine(TimeWaitedLoop(5f));
     }
 
-    // Update is called once per frame
     void Update()
     {
 
