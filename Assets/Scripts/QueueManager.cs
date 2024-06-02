@@ -37,6 +37,13 @@ public class QueueManager : MonoBehaviour
                 queuePointsPosition.Add(new Vector3(x, y, z));
             }
         }
+        else
+        {
+            for (int i = 0; i < FixedQueuePoints.QueuePoints.Count; i++)
+            {
+                queuePointsPosition.Add(FixedQueuePoints.QueuePoints[i]);
+            }
+        }
 
         //queuePointsPosition.Add(new Vector3(165.5f, 0f, 30.3f));
         GameObject[] buildings = GameObject.FindGameObjectsWithTag(Tag.Goal);

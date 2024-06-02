@@ -202,17 +202,22 @@ public class RoadBuildingManager : MonoBehaviour
     {
         ValidateRotation(firstRoadAnchor, secondRoadAnchor);
         GameObject road_in_middle = null;
-        RoadAnchor anchorLarge = null;
-        RoadAnchor anchorSmall = null;
+        RoadAnchor anchorLarge;
+        RoadAnchor anchorSmall;
         if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large)
             && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
         {
             road_in_middle = RoadLargePrefab;
+            anchorLarge = null;
+            anchorSmall = null;
+            Debug.Log("This");
         }
         else if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small)
             && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
         {
             road_in_middle = RoadSmallPrefab;
+            anchorLarge = null;
+            anchorSmall = null;
         }
         else if (Tag.CompareTags(firstRoadAnchor.transform.parent, Tag.Intersection_3_Large, Tag.Intersection_4_Large)
             && Tag.CompareTags(secondRoadAnchor.transform.parent, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
@@ -234,11 +239,9 @@ public class RoadBuildingManager : MonoBehaviour
             anchorSmall = null;
         }
 
-        Debug.Log(anchorLarge == null);
-
         if (anchorLarge == null || anchorSmall == null)
         {
-            GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, RoadSmallPrefab, firstRoadAnchor.transform.parent.position, Quaternion.identity);
+            GameObject bet_intersection_roadGO = CreateObjectAtPosition(roadSystem, road_in_middle, firstRoadAnchor.transform.parent.position, Quaternion.identity);
             Road bet_intersection_roadGO_road = bet_intersection_roadGO.GetComponent<Road>();
             LinkRoadToStartEndAnchor(bet_intersection_roadGO_road, firstRoadAnchor, secondRoadAnchor);
             if (buildMode == BuildMode.Preview)
@@ -255,9 +258,14 @@ public class RoadBuildingManager : MonoBehaviour
             GameObject bet_transition_raodGO = CreateObjectAtPosition(roadSystem, RoadLargePrefab, anchorLarge.transform.parent.position, Quaternion.identity);
             Road bet_transition_roadGO_road = bet_transition_raodGO.GetComponent<Road>();
 
-            GameObject transition = CreateObjectAtPosition(roadSystem, TransitionPrefab, anchorLarge.transform.parent.position + anchorLarge.transform.forward * 30f, Quaternion.identity);
+            GameObject transition = CreateObjectAtPosition(roadSystem, TransitionPrefab, anchorLarge.transform.parent.position + anchorLarge.transform.forward * 40f, Quaternion.identity);
 
-            transition.transform.LookAt(anchorLarge.transform.position);
+            transition.transform.LookAt(anchorLarge.transform.parent.localPosition);
+
+            transition.transform.localPosition = new Vector3(transition.transform.localPosition.x, 0, transition.transform.localPosition.z);
+            Vector3 newRotation = transition.transform.rotation.eulerAngles;
+            newRotation.x = 0;
+            transition.transform.rotation = Quaternion.Euler(newRotation);
 
             RoadAnchor[] roadAnchors = transition.GetComponentsInChildren<RoadAnchor>();
             RoadAnchor transition_4;

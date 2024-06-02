@@ -110,14 +110,14 @@ public class InputManager : MonoBehaviour
             {
                 road.GetComponent<RoadTrafficDensity>().ShowIndicator = Indicator;
             }
-            Image image = congestionPanel.transform.Find("Congestion").Find("Image").GetComponent<Image>();
+            GameObject trafficToggleButton = congestionPanel.transform.Find("Congestion").gameObject;
             if (Indicator == false)
             {
-                image.sprite = Resources.Load<Sprite>("Icons/congestion-off");
+                ChangeToNormalColor(trafficToggleButton);
             }
             else
             {
-                image.sprite = Resources.Load<Sprite>("Icons/congestion-on");
+                ChangeToSelectedColor(trafficToggleButton);
             }
         }
     }
@@ -499,7 +499,7 @@ public class InputManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.01f);
         //ResetUponRoadModification();
         roadBuildingManager.RebuildAffectedRoad();
-        roadSystem.ConstructGraph();
+        //roadSystem.ConstructGraph();
         ResetRoadBuilding();
         DestroyAllPreviewObject();
         intersectionManager.GetLatestIntersection();

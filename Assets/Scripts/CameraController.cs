@@ -37,6 +37,11 @@ public class CameraController : MonoBehaviour
         UpdatePositionRotation();
     }
 
+    private void FixedUpdate()
+    {
+        Debug.Log("");
+    }
+
     void HandleMovementInput()
     {
         newPosition += transform.right * Input.GetAxis("Horizontal") * movementSpeed;

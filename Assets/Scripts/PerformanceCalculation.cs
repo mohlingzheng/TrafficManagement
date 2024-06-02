@@ -26,37 +26,70 @@ public class PerformanceCalculation : MonoBehaviour
 
     private void DisplayTotalWaitingTime()
     {
+        SetColorForLabel();
+
+        Color originalColor = GraphPanel.transform.Find("Original").GetComponent<LineRenderer>().startColor;
+        Color modifiedColor = GraphPanel.transform.Find("Modified").GetComponent<LineRenderer>().startColor;
+
         TextMeshProUGUI textMeshProUGUI;
 
         originalWaitingTime = GraphPanel.GetComponent<GraphManager>().OriginalSumWaitingTime;
         textMeshProUGUI = transform.Find("OriginalTimeValue").GetComponent<TextMeshProUGUI>();
         textMeshProUGUI.text = originalWaitingTime.ToString("F0") + " Seconds";
-        textMeshProUGUI.color = GraphPanel.transform.Find("Original").GetComponent<LineRenderer>().startColor;
+        textMeshProUGUI.color = originalColor;
 
         modifiedWaitingTime = GraphPanel.GetComponent<GraphManager>().ModifiedSumWaitingTime;
         textMeshProUGUI = transform.Find("ModifiedTimeValue").GetComponent<TextMeshProUGUI>();
         textMeshProUGUI.text = modifiedWaitingTime.ToString("F0") + " Seconds";
-        textMeshProUGUI.color = GraphPanel.transform.Find("Modified").GetComponent<LineRenderer>().startColor;
+        textMeshProUGUI.color = modifiedColor;
 
         originalVehicle = GraphPanel.GetComponent<GraphManager>().originalVehicle;
         textMeshProUGUI = transform.Find("OriginalVehicleValue").GetComponent<TextMeshProUGUI>();
         textMeshProUGUI.text = originalVehicle.ToString("F0") + " Vehicles";
-        textMeshProUGUI.color = GraphPanel.transform.Find("Original").GetComponent<LineRenderer>().startColor;
+        textMeshProUGUI.color = originalColor;
 
         modifiedVehicle = GraphPanel.GetComponent<GraphManager>().modifiedVehicle;
         textMeshProUGUI = transform.Find("ModifiedVehicleValue").GetComponent<TextMeshProUGUI>();
         textMeshProUGUI.text = modifiedVehicle.ToString("F0") + " Vehicles";
-        textMeshProUGUI.color = GraphPanel.transform.Find("Modified").GetComponent<LineRenderer>().startColor;
+        textMeshProUGUI.color = modifiedColor;
 
         originalAverageWaitingTime = originalWaitingTime / originalVehicle;
         textMeshProUGUI = transform.Find("OriginalAverageValue").GetComponent<TextMeshProUGUI>();
         textMeshProUGUI.text = originalAverageWaitingTime.ToString("F2") + " Seconds";
-        textMeshProUGUI.color = GraphPanel.transform.Find("Original").GetComponent<LineRenderer>().startColor;
+        textMeshProUGUI.color = originalColor;
 
         modifiedAverageWaitingTime = modifiedWaitingTime / modifiedVehicle;
         textMeshProUGUI = transform.Find("ModifiedAverageValue").GetComponent<TextMeshProUGUI>();
         textMeshProUGUI.text = modifiedAverageWaitingTime.ToString("F2") + " Seconds";
-        textMeshProUGUI.color = GraphPanel.transform.Find("Modified").GetComponent<LineRenderer>().startColor;
+        textMeshProUGUI.color = modifiedColor;
+    }
+
+    void SetColorForLabel()
+    {
+        TextMeshProUGUI textMeshProUGUI;
+
+        Color originalColor = GraphPanel.transform.Find("Original").GetComponent<LineRenderer>().startColor;
+        Color modifiedColor = GraphPanel.transform.Find("Modified").GetComponent<LineRenderer>().startColor;
+
+        textMeshProUGUI = transform.Find("OriginalTimeLabel").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.color = originalColor;
+
+        textMeshProUGUI = transform.Find("OriginalVehicleLabel").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.color = originalColor;
+
+        textMeshProUGUI = transform.Find("OriginalAverageLabel").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.color = originalColor;
+
+        textMeshProUGUI = transform.Find("ModifiedTimeLabel").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.color = modifiedColor;
+
+        textMeshProUGUI = transform.Find("ModifiedVehicleLabel").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.color = modifiedColor;
+
+        textMeshProUGUI = transform.Find("ModifiedAverageLabel").GetComponent<TextMeshProUGUI>();
+        textMeshProUGUI.color = modifiedColor;
+
+
     }
 
     private void DisplayPerformanceResult()

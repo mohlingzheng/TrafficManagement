@@ -185,7 +185,7 @@ public class VehicleMovement : MonoBehaviour
         }
         else if (currentRoadType == OnLanes.Large && GoingToTurnLeft())
         {
-            if (highSpeed)
+            if (highSpeed && goingToTurn == "Left")
             {
                 // find chance to go to high speed lane
                 // if no chance, stop and wait
@@ -197,7 +197,7 @@ public class VehicleMovement : MonoBehaviour
         }
         else if (currentRoadType == OnLanes.Large && GoingToTurnRight())
         {
-            if (!highSpeed)
+            if (!highSpeed && goingToTurn == "Right")
             {
                 // find chance to go to high speed lane
                 // if no chance, stop and wait
@@ -657,14 +657,30 @@ public class VehicleMovement : MonoBehaviour
                 {
                     if (WantToRight() && goingToTurn == "Right")
                     {
-                        if (CheckIfThereIsCar(GetWallAcross(hit.Value.collider.gameObject)))
-                        {
-                            UpdateStopAttribute(hit.Value);
-                        }
-                        else
-                        {
-                            UpdateNormalAttribute();
-                        }
+                        //GameObject vehicle = CheckIfThereIsCar(GetWallAcross(hit.Value.collider.gameObject));
+                        //if (vehicle)
+                        //{
+                        //    if (vehicle.GetComponent<VehicleMovement>().goingToTurn != "Right")
+                        //    {
+                        //        UpdateStopAttribute(hit.Value);
+                        //    }
+                        //    else
+                        //    {
+                        //        if (hit.Value.collider.transform.parent.name == AnchorType.anchor_north || hit.Value.collider.transform.parent.name == AnchorType.anchor_east)
+                        //        {
+                        //            UpdateNormalAttribute();
+                        //        }
+                        //        else
+                        //        {
+                        //            UpdateStopAttribute(hit.Value);
+                        //        }
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    UpdateNormalAttribute();
+                        //}
+                        UpdateNormalAttribute();
                     }
                     else
                     {
@@ -753,7 +769,7 @@ public class VehicleMovement : MonoBehaviour
 
     }
 
-    private bool WantToRight()
+    public bool WantToRight()
     {
         if (Count)
             return true;
@@ -825,10 +841,10 @@ public class VehicleMovement : MonoBehaviour
         return wall.transform.parent.parent.Find(anchor).Find("TrafficLightBlock").gameObject;
     }
 
-    private bool CheckIfThereIsCar(GameObject wall, bool intersection4 = false)
+    private GameObject CheckIfThereIsCar(GameObject wall, bool intersection4 = false)
     {
         if (ProbabilityNotFollow())
-            return false;
+            return null;
         if (Tag.CompareTags(wall.transform.parent.parent.transform, Tag.Intersection_3_Large, Tag.Intersection_4_Large))
         {
             RaycastHit hitLeft, hitRight;
@@ -844,10 +860,10 @@ public class VehicleMovement : MonoBehaviour
                     if (intersection4)
                     {
                         if (hitLeft.collider.transform.GetComponent<VehicleMovement>().goingToTurn != "Right")
-                            return true;
+                            return hitLeft.collider.gameObject;
                     }
                     else
-                        return true;
+                        return hitLeft.collider.gameObject;
                 }
 
             }
@@ -864,14 +880,14 @@ public class VehicleMovement : MonoBehaviour
                     if (intersection4)
                     {
                         if (hitRight.collider.transform.GetComponent<VehicleMovement>().goingToTurn != "Right")
-                            return true;
+                            return hitRight.collider.gameObject; ;
                     }
                     else
-                        return true;
+                        return hitRight.collider.gameObject; ;
                 }
             }
 
-            return false;
+            return null;
         }
         else if (Tag.CompareTags(wall.transform.parent.parent.transform, Tag.Intersection_3_Small, Tag.Intersection_4_Small))
         {
@@ -882,12 +898,12 @@ public class VehicleMovement : MonoBehaviour
             if (Physics.Raycast(position, wall.transform.forward, out hit, 30f))
             {
                 if (hit.collider.transform.CompareTag("Vehicle"))
-                    return true;
+                    return hit.collider.gameObject;
             }
-            return false;
+            return null;
         }
         else
-            return false;
+            return null;
     }
 
     private void UpdateNormalAttribute()

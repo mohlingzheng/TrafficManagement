@@ -1,6 +1,7 @@
 using Barmetler.RoadSystem;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class IntersectionManager : MonoBehaviour
@@ -9,17 +10,18 @@ public class IntersectionManager : MonoBehaviour
     public GameObject[] intersection_4_small;
     public GameObject[] intersection_3_large;
     public GameObject[] intersection_4_large;
-    string[] currentState = { };
-    string[] NorthSouth = { "Anchor North", "Anchor South" };
-    string[] EastWest = { "Anchor East", "Anchor West" };
-    string[] Empty = { };
+    //string[] currentState = { };
+    string currentState = null;
+    //string[] NorthSouth = { "Anchor North", "Anchor South" };
+    //string[] EastWest = { "Anchor East", "Anchor West" };
+    //string[] Empty = { };
     public GameObject TrafficLightBlockGameObject;
     public GameObject TrafficLightPrefab;
 
     void Start()
     {
         GetLatestIntersection();
-        StartCoroutine(MoveAndStart());
+        StartCoroutine(MoveAndStart2());
     }
 
     void FixedUpdate()
@@ -100,7 +102,7 @@ public class IntersectionManager : MonoBehaviour
                 {
                     block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
-                else if (IsStringInsideArray(currentState, roadAnchor.name))
+                else if (currentState == roadAnchor.name)
                 {
                     block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
@@ -170,7 +172,7 @@ public class IntersectionManager : MonoBehaviour
                 {
                     block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
-                else if (IsStringInsideArray(currentState, roadAnchor.name))
+                else if (currentState == roadAnchor.name)
                 {
                     block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
                 }
@@ -183,18 +185,48 @@ public class IntersectionManager : MonoBehaviour
         }
     }
 
-    IEnumerator MoveAndStart()
+    //IEnumerator MoveAndStart()
+    //{
+    //    while (true)
+    //    {
+    //        currentState = NorthSouth;
+    //        yield return new WaitForSeconds(6f);
+
+    //        currentState = Empty;
+    //        yield return new WaitForSeconds(6f);
+
+    //        currentState = EastWest;
+    //        yield return new WaitForSeconds(6f);
+    //    }
+    //}
+
+    IEnumerator MoveAndStart2()
     {
         while (true)
         {
-            currentState = NorthSouth;
+            currentState = AnchorType.anchor_north;
             yield return new WaitForSeconds(6f);
 
-            currentState = Empty;
+            currentState = null;
+            yield return new WaitForSeconds(3f);
+
+            currentState = AnchorType.anchor_east;
             yield return new WaitForSeconds(6f);
 
-            currentState = EastWest;
+            currentState = null;
+            yield return new WaitForSeconds(3f);
+
+            currentState = AnchorType.anchor_south;
             yield return new WaitForSeconds(6f);
+
+            currentState = null;
+            yield return new WaitForSeconds(3f);
+
+            currentState = AnchorType.anchor_west;
+            yield return new WaitForSeconds(6f);
+
+            currentState = null;
+            yield return new WaitForSeconds(3f);
         }
     }
 
@@ -215,9 +247,9 @@ public class IntersectionManager : MonoBehaviour
         return position;
     }
 
-    void TrafficLightStatusUpdate(GameObject block, string[] currentState, string name)
+    void TrafficLightStatusUpdate(GameObject block, string currentState, string name)
     {
-        if (IsStringInsideArray(currentState, name))
+        if (currentState == name)
         {
             block.GetComponent<TrafficLightLogic>().SetCurrentState(TrafficLightState.Green);
         }
@@ -241,7 +273,7 @@ public class IntersectionManager : MonoBehaviour
 
     private void TrafficLightSwitch(GameObject trafficLight, GameObject block)
     {
-        TrafficLightState state = block.GetComponent<TrafficLightLogic>().currentState;
+        TrafficLightState state = block.GetComponent<TrafficLightLogic>().currentLightState;
         List <GameObject> TrafficLightPoints = new List<GameObject>();
         for (int i = 0; i < trafficLight.transform.childCount; i++)
         {

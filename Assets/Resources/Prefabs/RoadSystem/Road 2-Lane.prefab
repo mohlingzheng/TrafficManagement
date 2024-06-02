@@ -119,20 +119,26 @@ MonoBehaviour:
   end: {fileID: 0}
   autoSetControlPoints: 0
   points:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
-  - {x: 0, y: 0, z: 3}
+  - {x: 19, y: 0, z: -75}
+  - {x: 19.37303, y: 0.14405902, z: -74.08344}
+  - {x: 36.0178, y: 0, z: -49.966484}
+  - {x: 30, y: 0, z: -25}
+  - {x: 26.498045, y: 0, z: -10.471176}
+  - {x: 0.82045424, y: 0, z: 3.4282863}
   - {x: 0, y: 0, z: 4}
   normals:
+  - {x: -0.008586549, y: 0.9883661, z: -0.15185085}
   - {x: 0, y: 1, z: 0}
   - {x: 0, y: 1, z: 0}
   angles: []
   bounds:
-    m_Center: {x: 0, y: 0, z: 2}
-    m_Extent: {x: 0, y: 0, z: 2}
+    m_Center: {x: 15.654976, y: 0.032012865, z: -35.5}
+    m_Extent: {x: 15.654976, y: 0.032012865, z: 39.5}
   boundingBoxes:
-  - m_Center: {x: 0, y: 0, z: 2}
-    m_Extent: {x: 0, y: 0, z: 2}
+  - m_Center: {x: 25.154976, y: 0.032012865, z: -50}
+    m_Extent: {x: 6.154976, y: 0.032012865, z: 25}
+  - m_Center: {x: 15, y: 0, z: -10.5}
+    m_Extent: {x: 15, y: 0, z: 14.5}
 --- !u!33 &9221286213038852279
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -176,6 +182,9 @@ MonoBehaviour:
   NumberOfCars: 0
   RoadLength: 0
   TrafficDensity: 0
+  WeightValue: 0
+  HighTraffic: 0
+  ShowIndicator: 0
 --- !u!114 &-5421430314893411059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,3 +203,4 @@ MonoBehaviour:
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
+  needsUpdate: 1

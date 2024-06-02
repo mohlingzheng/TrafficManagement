@@ -8,21 +8,28 @@ public class DynamicRoadSystemWeight : MonoBehaviour
     public RoadSystem roadSystem;
     public InputManager inputManager;
     public bool IsDynamic = false;
+    public float timer = 0f;
     
     void Start()
     {
-        StartCoroutine(UpdateRoadSystemWeight());
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (IsDynamic)
+            timer += Time.deltaTime;
     }
 
     public void ToggleDynamic()
     {
         IsDynamic = !IsDynamic;
+        if (IsDynamic)
+            StartCoroutine(UpdateRoadSystemWeight());
+        else
+            StopCoroutine(UpdateRoadSystemWeight());
+        timer = 0f;
     }
 
     IEnumerator UpdateRoadSystemWeight()
@@ -34,6 +41,7 @@ public class DynamicRoadSystemWeight : MonoBehaviour
             {
                 roadSystem.ConstructGraph();
                 inputManager.PathFindingRecalculate();
+                timer = 0f;
             }
         }
     }

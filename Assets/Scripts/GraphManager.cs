@@ -33,6 +33,7 @@ public class GraphManager : MonoBehaviour
     public float TopPadding = 8f;
     int numberOfGroup = 10;
     public GameObject CoordinatePrefab;
+    public GameObject CoordinateSphere;
     float CoordinateMinorDisplacement = 4f;
 
     [Header("Result Value")]
@@ -62,8 +63,8 @@ public class GraphManager : MonoBehaviour
 
         CalculateTotalWaitingTime();
 
-        SetCoordinateLabel(originalLineRenderer, processedOriginalTimes);
-        SetCoordinateLabel(modifiedLineRenderer, processedModifiedTimes);
+        SetCoordinateLabel(originalLineRenderer, processedOriginalTimes, "Original");
+        SetCoordinateLabel(modifiedLineRenderer, processedModifiedTimes, "Modified");
 
         SetupAxisLabel(true);
 
@@ -84,18 +85,27 @@ public class GraphManager : MonoBehaviour
             if (lines.Length == 0)
             {
                 Debug.Log("Content is empty");
+            }
+            else
+            {
+                for (int i = 0; i < lines.Length - 1; i++)
+                {
+                    originalTimes.Add((double)(float.Parse(lines[i].Trim())));
+                }
+                originalVehicle = int.Parse(lines[lines.Length - 1].Trim());
                 return;
             }
-            for (int i = 0; i < lines.Length - 1; i++)
-            {
-                originalTimes.Add((double)(float.Parse(lines[i].Trim())));
-            }
-            originalVehicle = int.Parse(lines[lines.Length - 1].Trim());
         }
         else
         {
             Debug.Log("File does not exist.");
         }
+
+        for (int i = 0; i < FixedWaitedTime.WaitedTime.Count - 1; i++)
+        {
+            originalTimes.Add(FixedWaitedTime.WaitedTime[i]);
+        }
+        originalVehicle = (int)FixedWaitedTime.WaitedTime[FixedWaitedTime.WaitedTime.Count - 1];
     }
 
 
@@ -106,9 +116,9 @@ public class GraphManager : MonoBehaviour
             Debug.Log("Use Random Value");
             for (int i = 0; i < 103; i++)
             {
-                modifiedTimes.Add(UnityEngine.Random.Range(1, 15));
+                modifiedTimes.Add(UnityEngine.Random.Range(300, 600));
             }
-            modifiedVehicle = UnityEngine.Random.Range(0, 200);
+            modifiedVehicle = UnityEngine.Random.Range(200, 250);
         }
         else
         {
@@ -257,9 +267,10 @@ public class GraphManager : MonoBehaviour
 
     }
 
-    private void SetCoordinateLabel(LineRenderer lineRenderer, List<double> timeList)
+    private void SetCoordinateLabel(LineRenderer lineRenderer, List<double> timeList, String type)
     {
-        Transform coordinateLabel = transform.Find("Original").Find("CoordinateLabel");
+        Transform coordinateLabel = transform.Find(type).Find("CoordinateLabel");
+        Transform coordinateSphere = transform.Find(type).Find("CoordinateSphere");
         for (int i = 0; i < lineRenderer.positionCount; i++)
         {
             GameObject coordinate = Instantiate(CoordinatePrefab, coordinateLabel);
@@ -279,6 +290,10 @@ public class GraphManager : MonoBehaviour
                 Upper = PutAtUpper(lineRenderer.GetPosition(i - 1).y, lineRenderer.GetPosition(i).y, lineRenderer.GetPosition(i + 1).y);
             }
             Vector3 position = lineRenderer.GetPosition(i);
+            GameObject sphere = Instantiate(CoordinateSphere, coordinateSphere);
+            sphere.transform.position = position;
+            sphere.GetComponent<Image>().color = lineRenderer.startColor;
+
             if (Upper)
                 position.y += CoordinateMinorDisplacement;
             else
